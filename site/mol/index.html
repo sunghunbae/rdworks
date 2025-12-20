@@ -1,0 +1,4539 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Chained Workflows built on RDKit">
+      
+      
+        <meta name="author" content="SungHun Bae">
+      
+      
+      
+        <link rel="prev" href="../mollibr/">
+      
+      
+        <link rel="next" href="../conf/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Molecule - rdworks</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#conformer-generation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="rdworks" class="md-header__button md-logo" aria-label="rdworks" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            rdworks
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Molecule
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/sunghunbae/rdworks" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../mollibr/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Library
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Molecule
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../conf/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Conformer
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../torsion.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Torsion
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../microstate/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Microstate
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../complete/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Complete
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../scaffold/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Scaffold
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../utils/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Utils
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="rdworks" class="md-nav__button md-logo" aria-label="rdworks" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    rdworks
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/sunghunbae/rdworks" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mollibr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Molecule
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Molecule
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#conformer-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conformer Generation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conformer Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#number-of-conformers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Number of conformers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#etkdg-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ETKDG method
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clustering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clustering:
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Clustering:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-of-butinaclusterdata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage of Butina.ClusterData()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#references_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fingerprint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fingerprint
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#similarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Similarity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#druglikeness-and-qed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Druglikeness and QED
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Druglikeness and QED">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#references_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hydrogen-bonding-acceptor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hydrogen Bonding Acceptor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mol
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mol">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.ETKDG_params" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ETKDG_params
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.InChIKey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InChIKey
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.MFP2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MFP2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.charge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        charge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.chunksize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        chunksize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.confs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        confs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.fp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fp
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.is_confs_aligned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_confs_aligned
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.is_stereo_specified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_stereo_specified
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.max_workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        max_workers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.molblock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        molblock
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.num_confs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        num_confs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.num_stereoisomers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        num_stereoisomers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numbers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        progress
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.props" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        props
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.rdmol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rdmol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.ring_bond_stereo_info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ring_bond_stereo_info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.smiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        smiles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.symbols" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        symbols
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.align_confs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        align_confs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.calculate_sp_torsion_energies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        calculate_sp_torsion_energies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.calculate_torsion_energies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        calculate_torsion_energies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.cluster_confs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cluster_confs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.compute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compute
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        copy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        count
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.deserialize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deserialize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.draw" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        draw
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.drop_confs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        drop_confs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.dumps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dumps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.from_molblock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from_molblock
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.get_SASA" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_SASA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.get_similarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_similarity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.get_torsion_angle_atoms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_torsion_angle_atoms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.has_substr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        has_substr
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.is_matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_matching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.is_nnp_ready" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_nnp_ready
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.is_similar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_similar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.make_confs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        make_confs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.optimize_confs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        optimize_confs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.qed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        qed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.remove_stereo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        remove_stereo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.rename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rename
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.report_props" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        report_props
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.report_stereo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        report_stereo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.serialize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        serialize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.singlepoint_confs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        singlepoint_confs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.sort_confs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sort_confs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.to_plot_data_torsion_angle_vs_energy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_plot_data_torsion_angle_vs_energy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.to_png" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_png
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.to_sdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_sdf
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.mol.Mol.to_svg" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_svg
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conformer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../torsion.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Torsion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../microstate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Microstate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scaffold/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaffold
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Molecule</h1>
+
+<h2 id="conformer-generation">Conformer Generation<a class="headerlink" href="#conformer-generation" title="Permanent link">&para;</a></h2>
+<p>To yield more chemically meaningful conformers, 
+Riniker and Landrum implemented the experimental torsion knowledge distance geometry (ETKDG) method 
+which uses torsion angle preferences from the Cambridge Structural Database (CSD) 
+to correct the conformers after distance geometry has been used to generate them. </p>
+<p>The configs of various conformer generation options are stored in a EmbedParameter object:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># To explicitly call the ETKDG EmbedParameter object: </span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">params</span> <span class="o">=</span> <span class="n">AllChem</span><span class="o">.</span><span class="n">ETKDG</span><span class="p">()</span> 
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">params</span> <span class="o">=</span> <span class="n">AllChem</span><span class="o">.</span><span class="n">ETKDGv2</span><span class="p">()</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Addtional small ring torsion potentials: </span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">params</span> <span class="o">=</span> <span class="n">AllChem</span><span class="o">.</span><span class="n">srETKDGv3</span><span class="p">()</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># Additional macrocycle ring torsion potentials and macrocycle-specific handles</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">params</span> <span class="o">=</span> <span class="n">AllChem</span><span class="o">.</span><span class="n">ETKDGv3</span><span class="p">()</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># use the above two in conjunction, do:</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">params</span> <span class="o">=</span> <span class="n">AllChem</span><span class="o">.</span><span class="n">ETKDGv3</span><span class="p">()</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">params</span><span class="o">.</span><span class="n">useSmallRingTorsions</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="c1"># default rdDistGeom.EmbedMultipleConfs() settings</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="n">randomSeed</span><span class="o">=-</span><span class="mi">1</span>           <span class="n">RNG</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">seeded</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="n">useRandomCoords</span><span class="o">=</span><span class="kc">False</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    <span class="n">pruneRmsThresh</span><span class="o">=-</span><span class="mf">1.0</span>     <span class="n">No</span> <span class="n">pruning</span> <span class="n">by</span> <span class="n">default</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="n">numThreads</span><span class="o">=</span><span class="mi">1</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="n">useRandomCoords</span><span class="o">=</span><span class="kc">False</span>   <span class="n">Start</span> <span class="n">the</span> <span class="n">embedding</span> <span class="kn">from</span><span class="w"> </span><span class="nn">random</span> <span class="n">coordinates</span> 
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>                            <span class="n">instead</span> <span class="n">of</span> <span class="n">using</span> <span class="n">eigenvalues</span> <span class="n">of</span> <span class="n">the</span> <span class="n">distance</span> <span class="n">matrix</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="n">numThreads</span><span class="o">=</span><span class="mi">1</span>            <span class="n">Number</span> <span class="n">of</span> <span class="n">threads</span> <span class="n">to</span> <span class="n">use</span> <span class="k">while</span> <span class="n">embedding</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>                            <span class="n">Only</span> <span class="k">if</span> <span class="n">built</span> <span class="k">with</span> <span class="n">multi</span><span class="o">-</span><span class="n">thread</span> <span class="n">support</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>                            <span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">the</span> <span class="nb">max</span> <span class="n">supported</span> <span class="n">by</span> <span class="n">the</span> <span class="n">system</span>
+</code></pre></div>
+<h3 id="number-of-conformers">Number of conformers<a class="headerlink" href="#number-of-conformers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>RotBonds</th>
+<th>N_confs</th>
+<th>RotBonds</th>
+<th>N_confs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>11</td>
+<td>434</td>
+</tr>
+<tr>
+<td>1</td>
+<td>8</td>
+<td>12</td>
+<td>501</td>
+</tr>
+<tr>
+<td>2</td>
+<td>26</td>
+<td>13</td>
+<td>572</td>
+</tr>
+<tr>
+<td>3</td>
+<td>51</td>
+<td>14</td>
+<td>646</td>
+</tr>
+<tr>
+<td>4</td>
+<td>82</td>
+<td>15</td>
+<td>723</td>
+</tr>
+<tr>
+<td>5</td>
+<td>119</td>
+<td>16</td>
+<td>804</td>
+</tr>
+<tr>
+<td>6</td>
+<td>160</td>
+<td>17</td>
+<td>888</td>
+</tr>
+<tr>
+<td>7</td>
+<td>207</td>
+<td>18</td>
+<td>976</td>
+</tr>
+<tr>
+<td>8</td>
+<td>257</td>
+<td>19</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>9</td>
+<td>312</td>
+<td>20</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>10</td>
+<td>371</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="etkdg-method">ETKDG method<a class="headerlink" href="#etkdg-method" title="Permanent link">&para;</a></h3>
+<p>The ETKDG method of Riniker and Landrum uses torsion angle preferences 
+from the Cambridge Structural Database (CSD) to correct the conformers 
+after distance geometry has been used to generate them. 
+With this method, there should be no need to use a minimisation step 
+to clean up the structures. Since the 2018.09 release of the RDKit, 
+ETKDG is the default conformer generation method.</p>
+<p>Optimization on a molecule’s conformers is not often necessary when using ETKDG:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">res</span> <span class="o">=</span> <span class="n">AllChem</span><span class="o">.</span><span class="n">MMFFOptimizeMoleculeConfs</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+</code></pre></div></p>
+<p>Rms between conformers
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">AllChem</span><span class="o">.</span><span class="n">AlignMolConformers</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">RMSlist</span><span class="o">=</span><span class="n">rmslist</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">rms</span> <span class="o">=</span> <span class="n">AllChem</span><span class="o">.</span><span class="n">GetConformerRMS</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">prealigned</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div></p>
+<p>Contrary to the above Greg's comment, <code>RDKit ETKDG</code> conformer quality actually improves
+greatly by MMFF94 or MMFF94s optimization after embedding. UFF optimization is less
+effective than MMFF94 or MMFF94s.</p>
+<p><code>Torsional Diffusion</code> is the most efficient and accurate AI method according to Wang et al. (2023)</p>
+<p><code>Auto3D</code> uses RDKit conformers as a starting point for optimizing with a modified version of the 
+ANI-2x deep learning molecular potential (AIMNET), but this does not result in better performance 
+than that of RDKit in the bioactive conformation identification task.</p>
+<p>Generating a larger ensemble will monotonically increase the likelihood of  retrieving a  bioactive conformation, 
+but for efficiency reasons, it is desirable to generate smaller ensembles. As shown in Figures 5 and S6, <br />
+selecting the lowest energy poses from a larger ensemble does not improve the retrieval of bioactive conformations 
+with the exception of reducing down to a single conformer.</p>
+<h3 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h3>
+<ul>
+<li>L. Chan, G. M. Morris, G. R. Hutchison, Understanding Conformational Entropy in Small Molecules. 
+      J. Chem. Theory Comput. 17, 2099–2106 (2021).</li>
+<li>Riniker, S.; Landrum, G. A. “Better Informed Distance Geometry: Using What We Know To Improve Conformation Generation” 
+      J. Chem. Inf. Comp. Sci. 55:2562-74 (2015)</li>
+<li>Z. Wang, et al., Small-Molecule Conformer Generators: 
+      Evaluation of Traditional Methods and AI Models on High-Quality Data Sets. 
+      J. Chem. Inf. Model. 63, 6525–6536 (2023).</li>
+<li>B. Jing, G. Corso, J. Chang, R. Barzilay, T. Jaakkola, 
+      Torsional Diffusion for Molecular Conformer Generation. arXiv [physics.chem-ph] (2022).</li>
+<li>A. T. McNutt, et al., Conformer Generation for Structure-Based Drug Design: How Many and How Good? 
+    J. Chem. Inf. Model. 63, 6598–6607 (2023).</li>
+</ul>
+<h2 id="clustering">Clustering:<a class="headerlink" href="#clustering" title="Permanent link">&para;</a></h2>
+<p><a href="https://greglandrum.github.io/rdkit-blog/posts/2023-03-02-clustering-conformers.html">Clustering conformers</a></p>
+<h3 id="usage-of-butinaclusterdata">Usage of <code>Butina.ClusterData()</code><a class="headerlink" href="#usage-of-butinaclusterdata" title="Permanent link">&para;</a></h3>
+<ul>
+<li>isDistData: set this toggle when the data passed in is a</li>
+<li>distance matrix. The distance matrix should be stored symmetrically.</li>
+<li>distFunc: a function to calculate distances between points.
+      Receives 2 points as arguments, should return a float  </li>
+<li>reordering: if this toggle is set, the number of neighbors is updated
+      for the unassigned molecules after a new cluster is created 
+      such that always the molecule with the largest number of unassigned neighbors 
+      is selected as the next cluster center.</li>
+<li>returns a tuple of tuples containing information about the clusters:
+      ( 
+          (cluster1_elem1, cluster1_elem2, …), 
+          (cluster2_elem1, cluster2_elem2, …), 
+          …,
+      ) where the first element for each cluster is its centroid.</li>
+<li>https://www.rdkit.org/docs/source/rdkit.ML.Cluster.Butina.html</li>
+</ul>
+<h3 id="references_1">References<a class="headerlink" href="#references_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>D. Butina, Unsupervised Data Base Clustering Based on Daylight’s Fingerprint and Tanimoto Similarity: 
+    A Fast and Automated Way To Cluster Small and Large Data Sets. J. Chem. Inf. Comput. Sci. 39, 747–750 (1999).</li>
+</ul>
+<h2 id="fingerprint">Fingerprint<a class="headerlink" href="#fingerprint" title="Permanent link">&para;</a></h2>
+<p><a href="https://greglandrum.github.io/rdkit-blog/posts/2023-01-18-fingerprint-generator-tutorial.html">Tutorial</a></p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">fpgen</span> <span class="o">=</span> <span class="n">rdFingerprintGenerator</span><span class="o">.</span><span class="n">GetMorganGenerator</span><span class="p">(</span><span class="n">radius</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">fpSize</span><span class="o">=</span><span class="mi">2048</span><span class="p">)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">fpgen</span><span class="o">.</span><span class="n">GetFingerprint</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>               <span class="p">:</span> <span class="n">returns</span> <span class="n">a</span> <span class="n">bit</span> <span class="n">vector</span> <span class="n">of</span> <span class="n">size</span> <span class="n">fpSize</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">fpgen</span><span class="o">.</span><span class="n">GetCountFingerprint</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>          <span class="p">:</span> <span class="n">returns</span> <span class="n">a</span> <span class="n">count</span> <span class="n">vector</span> <span class="n">of</span> <span class="n">size</span> <span class="n">fpSize</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">fpgen</span><span class="o">.</span><span class="n">GetSparseFingerprint</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>         <span class="p">:</span> <span class="n">returns</span> <span class="n">a</span> <span class="n">sparse</span> <span class="n">bit</span> <span class="n">vector</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">fpgen</span><span class="o">.</span><span class="n">GetSparseCountFingerprint</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>    <span class="p">:</span> <span class="n">returns</span> <span class="n">a</span> <span class="n">sparse</span> <span class="n">count</span> <span class="n">vector</span>
+</code></pre></div>
+Note that sparse vector is very long.</p>
+<h2 id="similarity">Similarity<a class="headerlink" href="#similarity" title="Permanent link">&para;</a></h2>
+<p><a href="https://greglandrum.github.io/rdkit-blog/posts/2021-05-21-similarity-search-thresholds.html">Similarity search thresholds</a></p>
+<h2 id="druglikeness-and-qed">Druglikeness and QED<a class="headerlink" href="#druglikeness-and-qed" title="Permanent link">&para;</a></h2>
+<h3 id="references_2">References<a class="headerlink" href="#references_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>G. R. Bickerton, G. V. Paolini, J. Besnard, S. Muresan, A. L. Hopkins, 
+    Quantifying the chemical beauty of drugs. Nat. Chem. 4, 90–98 (2012).</li>
+</ul>
+<h2 id="hydrogen-bonding-acceptor">Hydrogen Bonding Acceptor<a class="headerlink" href="#hydrogen-bonding-acceptor" title="Permanent link">&para;</a></h2>
+<p><a href="https://github.com/rdkit/rdkit/blob/master/rdkit/Chem/QED.py">QED definition in RDkit</a></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">Acceptors</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmarts</span><span class="p">(</span><span class="n">hba</span><span class="p">)</span> <span class="k">for</span> <span class="n">hba</span> <span class="ow">in</span> <span class="p">[</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>        <span class="s1">&#39;[oH0;X2]&#39;</span><span class="p">,</span> 
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>        <span class="s1">&#39;[OH1;X2;v2]&#39;</span><span class="p">,</span> 
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="s1">&#39;[OH0;X2;v2]&#39;</span><span class="p">,</span> 
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="s1">&#39;[OH0;X1;v2]&#39;</span><span class="p">,</span> 
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="s1">&#39;[O-;X1]&#39;</span><span class="p">,</span> 
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="s1">&#39;[SH0;X2;v2]&#39;</span><span class="p">,</span> 
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        <span class="s1">&#39;[SH0;X1;v2]&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="s1">&#39;[S-;X1]&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="s1">&#39;[nH0;X2]&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span class="s1">&#39;[NH0;X1;v3]&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>        <span class="s1">&#39;[$([N;+0;X3;v3]);!$(N[C,S]=O)]&#39;</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="p">]]</span>
+</code></pre></div>
+<h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="rdworks.mol.Mol" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>rdworks.mol.Mol</code>
+
+
+<a href="#rdworks.mol.Mol" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Container for molecular structure, conformers, and other information.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h3 id="rdworks.mol.Mol-attributes">Attributes<a href="#rdworks.mol.Mol-attributes" class="headerlink" title="Permanent link">&para;</a></h3>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.ETKDG_params" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">ETKDG_params</span> <span class="o">=</span> <span class="n">rdDistGeom</span><span class="o">.</span><span class="n">ETKDGv3</span><span class="p">()</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.ETKDG_params" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.InChIKey" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">InChIKey</span> <span class="o">=</span> <span class="n">generate_inchi_key</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rdmol</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.InChIKey" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.MFP2" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">MFP2</span> <span class="o">=</span> <span class="n">rdFingerprintGenerator</span><span class="o">.</span><span class="n">GetMorganGenerator</span><span class="p">(</span><span class="n">radius</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">fpSize</span><span class="o">=</span><span class="mi">2048</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.MFP2" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.charge" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">charge</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.charge" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns molecular formal charge</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>int</code></b> (              <code><span title="int">int</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>molecular formal charge</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.chunksize" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">chunksize</span> <span class="o">=</span> <span class="n">chunksize</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.chunksize" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.confs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">confs</span> <span class="o">=</span> <span class="p">[</span><span class="n">molecule</span><span class="p">]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.confs" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.fp" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">fp</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.fp" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.is_confs_aligned" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">is_confs_aligned</span> <span class="o">=</span> <span class="kc">False</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.is_confs_aligned" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.is_stereo_specified" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">is_stereo_specified</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.is_stereo_specified" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Check if the molecule is stereo-specified at tetrahedral atom and double bond.</p>
+<p>This function uses <code>Chem.FindPotentialStereo()</code> function which returns a list of <code>elements</code>.
+Explanation of the elements:
+    element.type:
+        whether the element is a stereocenter ('stereoAtom') or a stereobond ('stereoBond')
+        - Atom_Octahedral
+        - Atom_SquarePlanar
+        - <em>Atom_Tetrahedral</em>
+        - Atom_TrigonalBipyramidal
+        - Bond_Atropisomer
+        - Bond_Cumulene_Even
+        - <em>Bond_Double</em>m.
+        - Unspecified</p>
+<div class="codehilite"><pre><span></span><code><span class="nx">element</span><span class="p">.</span><span class="nx">centeredOn</span><span class="p">:</span>
+<span class="w">    </span><span class="nx">The</span><span class="w"> </span><span class="nx">atom</span><span class="w"> </span><span class="k">or</span><span class="w"> </span><span class="nx">bond</span><span class="w"> </span><span class="nx">index</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">stereochemistry</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="nx">centered</span><span class="p">.</span>
+
+<span class="nx">element</span><span class="p">.</span><span class="nx">specified</span><span class="p">:</span>
+<span class="w">    </span><span class="nx">A</span><span class="w"> </span><span class="nx">boolean</span><span class="w"> </span><span class="nx">indicating</span><span class="w"> </span><span class="nx">whether</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">stereochemistry</span><span class="w"> </span><span class="nx">at</span><span class="w"> </span><span class="nx">that</span><span class="w"> </span><span class="nx">location</span>
+<span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="nx">explicitly</span><span class="w"> </span><span class="nx">specified</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">molecule</span><span class="p">.</span>
+<span class="w">    </span><span class="nx">values</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="mi">0</span><span class="p">:</span><span class="w"> </span><span class="nx">rdkit</span><span class="p">.</span><span class="nx">Chem</span><span class="p">.</span><span class="nx">rdchem</span><span class="p">.</span><span class="nx">StereoSpecified</span><span class="p">.</span><span class="nx">Unspecified</span><span class="p">,</span>
+<span class="w">        </span><span class="mi">1</span><span class="p">:</span><span class="w"> </span><span class="nx">rdkit</span><span class="p">.</span><span class="nx">Chem</span><span class="p">.</span><span class="nx">rdchem</span><span class="p">.</span><span class="nx">StereoSpecified</span><span class="p">.</span><span class="nx">Specified</span><span class="p">,</span>
+<span class="w">        </span><span class="mi">2</span><span class="p">:</span><span class="w"> </span><span class="nx">rdkit</span><span class="p">.</span><span class="nx">Chem</span><span class="p">.</span><span class="nx">rdchem</span><span class="p">.</span><span class="nx">StereoSpecified</span><span class="p">.</span><span class="nx">Unknown</span><span class="p">,</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="nx">element</span><span class="p">.</span><span class="nx">descriptor</span><span class="p">:</span>
+<span class="w">    </span><span class="nx">A</span><span class="w"> </span><span class="nx">descriptor</span><span class="w"> </span><span class="nx">that</span><span class="w"> </span><span class="nx">can</span><span class="w"> </span><span class="nx">be</span><span class="w"> </span><span class="nx">used</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">identify</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="k">type</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">stereochemistry</span><span class="w"> </span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">g</span><span class="p">.,</span><span class="w"> </span><span class="sc">&#39;R&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;S&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;E&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;Z&#39;</span><span class="p">).</span>
+<span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="nx">Bond_Cis</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">rdkit</span><span class="p">.</span><span class="nx">Chem</span><span class="p">.</span><span class="nx">StereoDescriptor</span><span class="p">.</span><span class="nx">Bond_Cis</span>
+<span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="nx">Bond_Trans</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">rdkit</span><span class="p">.</span><span class="nx">Chem</span><span class="p">.</span><span class="nx">StereoDescriptor</span><span class="p">.</span><span class="nx">Bond_Trans</span>
+<span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="nx">NoValue</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">rdkit</span><span class="p">.</span><span class="nx">Chem</span><span class="p">.</span><span class="nx">StereoDescriptor</span><span class="p">.</span><span class="nx">NoValue</span>
+<span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="nx">Tet_CCW</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">rdkit</span><span class="p">.</span><span class="nx">Chem</span><span class="p">.</span><span class="nx">StereoDescriptor</span><span class="p">.</span><span class="nx">Tet_CCW</span>
+<span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="nx">Tet_CW</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">rdkit</span><span class="p">.</span><span class="nx">Chem</span><span class="p">.</span><span class="nx">StereoDescriptor</span><span class="p">.</span><span class="nx">Tet_CW</span>
+</code></pre></div>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>bool</code></b> (              <code><span title="bool">bool</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if stereo-specified.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.max_workers" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">max_workers</span> <span class="o">=</span> <span class="n">max_workers</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.max_workers" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.molblock" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">molblock</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.molblock" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns MolBlock</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.name" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.name" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.num_confs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">num_confs</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.num_confs" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the total number of conformers.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>int</code></b> (              <code><span title="int">int</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>total count of conformers.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.num_stereoisomers" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">num_stereoisomers</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.num_stereoisomers" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Counts number of all possible stereoisomers ignoring the current stereochemistry.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>int</code></b> (              <code><span title="int">int</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>number of stereoisomers.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.numbers" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">numbers</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.numbers" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the atomic numbers.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>list</code></b> (              <code><span title="list">list</span>[<span title="int">int</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>list of atomic numbers.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.progress" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">progress</span> <span class="o">=</span> <span class="n">progress</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.progress" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.props" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">props</span> <span class="o">=</span> <span class="p">{}</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.props" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.rdmol" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">rdmol</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.rdmol" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.ring_bond_stereo_info" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">ring_bond_stereo_info</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.ring_bond_stereo_info" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns double bond and cis/trans stereochemistry information.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="list">list</span>[<span title="tuple">tuple</span>]</code>
+          –
+          <div class="doc-md-description">
+            <p>list[tuple]: [(element.centeredOn, element.descriptor), ...]</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.smiles" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">smiles</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolToSmiles</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rdmol</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.smiles" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.mol.Mol.symbols" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">symbols</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#rdworks.mol.Mol.symbols" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the element symbols.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>list</code></b> (              <code><span title="list">list</span>[<span title="str">str</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>list of element symbols.</p>
+          </div>
+        </li>
+    </ul>
+
+    </div>
+
+</div>
+
+
+<h3 id="rdworks.mol.Mol-functions">Functions<a href="#rdworks.mol.Mol-functions" class="headerlink" title="Permanent link">&para;</a></h3>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.align_confs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">align_confs</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;rigid_fragment&#39;</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.align_confs" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Aligns all conformers to the first conformer.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>method</code></b>
+              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;rigid_fragment&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>alignment method:
+<code>rigid_fragment</code>, <code>CrippenO3A</code>, <code>MMFFO3A</code>, <code>best_rms</code>.
+Defaults to <code>rigid_fragment</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.calculate_sp_torsion_energies" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">calculate_sp_torsion_energies</span><span class="p">(</span><span class="n">calculator</span><span class="o">=</span><span class="s1">&#39;MMFF94&#39;</span><span class="p">,</span> <span class="n">torsion_angle_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">simplify</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">water</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batchsize_atoms</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.calculate_sp_torsion_energies" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Calculates potential energy profiles for each torsion angle using ASE optimizer.</p>
+<p>It uses the first conformer as a reference.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>calculator</code></b>
+              (<code><span title="str">str</span> | <span title="collections.abc.Callable">Callable</span></code>, default:
+                  <code>&#39;MMFF94&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>'MMFF', 'UFF', 'xTB' or ASE calculator.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>torsion_angle_idx</code></b>
+              (<code><span title="int">int</span> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>torsion index to calculate. Defaults to None (all).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>simplify</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to use fragment surrogate. Defaults to True.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>interval</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>20.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>interval of torsion angles in degree. Defaults to 15.0.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>batchsize_atoms</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>maximum number of atoms in a single batch.
+Setting any number smaller than conf.natoms to disable batch optimization.
+Defaults to 0.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="args-for-xtb-calculator" open>
+  <summary>Args for xTB calculator</summary>
+  <p>water (str, optional): water solvation model (choose 'gbsa', 'alpb', or 'cpcmx')
+    alpb: ALPB solvation model (Analytical Linearized Poisson-Boltzmann).
+    gbsa: generalized Born (GB) model with Surface Area contributions.
+    cpcmx: Extended Conductor-like Polarizable Continuum Solvation Model (CPCM-X).
+    Defaults to None.</p>
+</details>
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.calculate_torsion_energies" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">calculate_torsion_energies</span><span class="p">(</span><span class="n">calculator</span><span class="o">=</span><span class="s1">&#39;MMFF94&#39;</span><span class="p">,</span> <span class="n">torsion_angle_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">simplify</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmax</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">use_converged_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">batchsize_atoms</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">water</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.calculate_torsion_energies" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Calculates potential energy profiles for each torsion angle using ASE optimizer.</p>
+<p>It uses the first conformer as a reference.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>calculator</code></b>
+              (<code><span title="str">str</span> | <span title="collections.abc.Callable">Callable</span></code>, default:
+                  <code>&#39;MMFF94&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>'MMFF', 'UFF', 'xTB' or ASE calculator.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>torsion_angle_idx</code></b>
+              (<code><span title="int">int</span> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>torsion index to calculate. Defaults to None (all).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>simplify</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to use fragment surrogate. Defaults to True.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>fmax</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>0.05</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>fmax of ASE optimizer. Defaults to 0.05.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>interval</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>20.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>interval of torsion angles in degree. Defaults to 15.0.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>use_converged_only</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to use only converged data. Defaults to True.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>batchsize_atoms</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>maximum number of atoms in a single batch.
+Setting any number smaller than conf.natoms to disable batch optimization.
+Defaults to 0.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="args-for-xtb-calculator" open>
+  <summary>Args for xTB calculator</summary>
+  <p>water (str, optional): water solvation model (choose 'gbsa' or 'alpb')
+    alpb: ALPB solvation model (Analytical Linearized Poisson-Boltzmann).
+    gbsa: generalized Born (GB) model with Surface Area contributions.
+    Defaults to None.</p>
+</details>
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.cluster_confs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">cluster_confs</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;QT&#39;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">symmetry_aware</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.cluster_confs" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Clusters all conformers and sets cluster properties.</p>
+<p>Conformers are expected to be aligned.</p>
+
+
+<details class="following-cluster-properties-will-be-added" open>
+  <summary><code>cluster</code>, <code>cluster_mean_energy</code>,</summary>
+  <p><code>cluster_median_energy</code>, <code>cluster_IQR_energy</code>, <code>cluster_size</code>, <code>cluster_centroid</code> (True or False)</p>
+</details>        <p><code>RCKMeans</code> algorithm is unreliable and not supported for now.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>method</code></b>
+              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;QT&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>clustering algorithm:
+<code>Butina</code>,
+<code>QT</code>,
+<code>NMRCLUST</code>,
+<code>DQT</code>,
+<code>BitQT</code>,
+<code>DynamicTreeCut</code>,
+<code>AutoGraph</code>.
+Defaults to <code>QT</code>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>threshold</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>1.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>RMSD threshold of a cluster. Defaults to 1.0.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>sort</code></b>
+              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;size&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>sort cluster(s) by mean <code>energy</code> or cluster <code>size</code>.
+Defaults to <code>size</code>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>symmetry_aware</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to use symmetry-aware rmsd.
+Defaults to True.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="NotImplementedError">NotImplementedError</span></code>
+            –
+          <div class="doc-md-description">
+            <p>if unsupported method is requested.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.compute" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">compute</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.compute" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Change settings for parallel computing.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>max_workers</code></b>
+              (<code><span title="int">int</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>max number of workers.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>chunksize</code></b>
+              (<code><span title="int">int</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>chunksize of splitted workload.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>progress</code></b>
+              (<code><span title="bool">bool</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>whether to show progress bar.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.copy" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">copy</span><span class="p">()</span></code>
+
+<a href="#rdworks.mol.Mol.copy" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns a copy of self.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="typing.Self">Self</span></code>
+          –
+          <div class="doc-md-description">
+            <p>a copy of self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.count" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">count</span><span class="p">()</span></code>
+
+<a href="#rdworks.mol.Mol.count" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the number of conformers</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.deserialize" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">deserialize</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.deserialize" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>De-serialize the information and build a new Mol object.</p>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <p>serialized = mol1.serialize()
+mol2 = Mol().deserialize(serialized)</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>serialized</code></b>
+              (<code><span title="str">str</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>serialized string.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.draw" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">draw</span><span class="p">(</span><span class="n">coordgen</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rotate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.draw" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Draw molecule in 2D.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>coordgen</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to use <code>coordgen</code>. Defaults to False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>rotate</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to rotate drawing. Defaults to False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>axis</code></b>
+              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;z&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>axis for rotation. Defaults to 'z'.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>degree</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>0.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>degree for rotation. Defaults to 0.0.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="typing.Self">Self</span></code>
+          –
+          <div class="doc-md-description">
+            <p>Self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.drop_confs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">drop_confs</span><span class="p">(</span><span class="n">stereo_flipped</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">unconverged</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">similar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">similar_rmsd</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.drop_confs" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Drop conformers that meet some condition(s).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>stereo_flipped</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>drop conformers whose R/S and cis/trans stereo is unintentionally flipped.
+For example, a trans double bond in a macrocyle can end up with both trans
+and cis isomers in the final optimized conformers.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>unconverged</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>drop unconverged conformers. see <code>Converged</code> property.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>similar</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>drop similar conformers. see <code>similar_rmsd</code>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>similar_rmsd</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>0.3</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>RMSD (A) below <code>similar_rmsd</code> is regarded similar (default: 0.3)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>cluster</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>drop all except for the lowest energy conformer in each cluster.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>k</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>drop all except for <code>k</code> lowest energy conformers.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>window</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>drop all except for conformers within <code>window</code> of relative energy.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>To drop similar conformers within rmsd of 0.5 A</p>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">mol</span><span class="o">.</span><span class="n">drop_confs</span><span class="p">(</span><span class="n">similar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">similar_rmsd</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</code></pre></div>
+    <p>To drop conformers beyond 5 kcal/mol</p>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">mol</span><span class="o">.</span><span class="n">drop_confs</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.dumps" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">dumps</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.dumps" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns JSON dumps of properties.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><span title="str">str</span> | None</code>, default:
+                  <code>&#39;&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>key for a subset of properties. Defaults to None.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>decimals</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>2</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>decimal places for float numbers. Defaults to 2.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>str</code></b> (              <code><span title="str">str</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>JSON dumps.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.from_molblock" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">from_molblock</span><span class="p">(</span><span class="n">molblock</span><span class="p">,</span> <span class="n">compressed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.from_molblock" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize a new Mol object from MolBlock.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>molblock</code></b>
+              (<code><span title="str">str</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>MolBlock string</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="ValueError">ValueError</span></code>
+            –
+          <div class="doc-md-description">
+            <p>invalid MolBlock</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.get_SASA" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_SASA</span><span class="p">()</span></code>
+
+<a href="#rdworks.mol.Mol.get_SASA" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get Solvent Accessible Surface Area</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.get_similarity" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_similarity</span><span class="p">(</span><span class="n">other</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.get_similarity" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns Tanimoto similarity with other Mol object.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>other</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            rdworks.mol.Mol" href="#rdworks.mol.Mol">Mol</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>other Mol object.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="TypeError">TypeError</span></code>
+            –
+          <div class="doc-md-description">
+            <p>if <code>other</code> is not Mol object type.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>float</code></b> (              <code><span title="float">float</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>Tanimoto similarity.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.get_torsion_angle_atoms" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_torsion_angle_atoms</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.get_torsion_angle_atoms" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Determine torsion/dihedral angle atoms (i-j-k-l) and rotating group for each rotatable bond (j-k).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>strict</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to exclude amide/imide/ester/acid bonds.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="list">list</span>[<span title="tuple">tuple</span>]</code>
+          –
+          <div class="doc-md-description">
+            <p>[(i, j, k, l), ...]</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.has_substr" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">has_substr</span><span class="p">(</span><span class="n">substr</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.has_substr" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Determine if the molecule has the substructure match.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>pattern</code></b>
+              (<code><span title="str">str</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>SMARTS or SMILES.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>bool</code></b> (              <code><span title="bool">bool</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if matches.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.is_matching" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">is_matching</span><span class="p">(</span><span class="n">terms</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.is_matching" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Determines if the molecule matches the predefined substructure and/or descriptor ranges.</p>
+<table>
+<thead>
+<tr>
+<th>invert</th>
+<th>terms(~ or !)</th>
+<th>effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>True</td>
+<td>~</td>
+<td>No inversion</td>
+</tr>
+<tr>
+<td>True</td>
+<td></td>
+<td>Inversion</td>
+</tr>
+<tr>
+<td>False</td>
+<td>~</td>
+<td>Inversion</td>
+</tr>
+<tr>
+<td>False</td>
+<td></td>
+<td>No inversion</td>
+</tr>
+</tbody>
+</table>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>terms</code></b>
+              (<code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>substructure SMARTS expression or a path to predefined descriptor ranges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>invert</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to invert the result. Defaults to False.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>bool</code></b> (              <code><span title="bool">bool</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if matches.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.is_nnp_ready" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">is_nnp_ready</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;aimnet2&#39;</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.is_nnp_ready" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Check if a particular neural network model is applicable to current molecule.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;aimnet2&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>neural network models: <code>ANI-2x</code>, <code>ANI-2xt</code>, <code>AIMNET</code></p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="ValueError">ValueError</span></code>
+            –
+          <div class="doc-md-description">
+            <p>if model is not supported.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>bool</code></b> (              <code><span title="bool">bool</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if applicable.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.is_similar" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">is_similar</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.is_similar" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Check if other molecule is similar within Tanimoto similarity threshold.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>other</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            rdworks.mol.Mol" href="#rdworks.mol.Mol">Mol</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>other Mol object to compare with.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>threshold</code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Tanimoto similarity threshold.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>bool</code></b> (              <code><span title="bool">bool</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if similar.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.make_confs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">make_confs</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ETKDG&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.make_confs" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generates 3D conformers.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>n</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>50</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>number of conformers to generate. Defaults to 50.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>method</code></b>
+              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;ETKDG&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>conformer generation method.
+Choices are <code>ETKDG</code>, <code>CONFORGE</code>. Defaults to 'ETKDG'.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="reference" open>
+  <summary>Reference</summary>
+  <p>T. Seidel, C. Permann, O. Wieder, S. M. Kohlbacher, T. Langer,
+High-Quality Conformer Generation with CONFORGE: Algorithm and Performance Assessment.
+J. Chem. Inf. Model. 63, 5549-5570 (2023).</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.optimize_confs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">optimize_confs</span><span class="p">(</span><span class="n">calculator</span><span class="o">=</span><span class="s1">&#39;MMFF94&#39;</span><span class="p">,</span> <span class="n">fmax</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">water</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batchsize_atoms</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.optimize_confs" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Optimizes 3D geometry of conformers.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>calculator</code></b>
+              (<code><span title="str">str</span> | <span title="collections.abc.Callable">Callable</span></code>, default:
+                  <code>&#39;MMFF94&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>MMFF94 (= MMFF), MMFF94s, UFF, or ASE calculator.
+<code>MMFF94</code> or <code>MMFF</code> - Intended for general use, including organic molecules and proteins,
+    and primarily relies on data from quantum mechanical calculations.
+    It's often used in molecular dynamics simulations.
+<code>MMFF94s</code> - A "static" variant of MMFF94, with adjusted parameters for out-of-plane
+    bending and dihedral torsions to favor planar geometries for specific nitrogen atoms.
+    This makes it better suited for geometry optimization studies where a static,
+    time-averaged structure is desired. The "s" stands for "static".
+<code>UFF</code> - UFF refers to the "Universal Force Field," a force field model used for
+    molecular mechanics calculations. It's a tool for geometry optimization,
+    energy minimization, and exploring molecular conformations in 3D space.
+    UFF is often used to refine conformers generated by other methods,
+    such as random conformer generation, to produce more physically plausible
+    and stable structures.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>fmax</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>0.05</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>fmax for the calculator convergence. Defaults to 0.05.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>max_iter</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>1000</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>max iterations for the calculator. Defaults to 1000.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>batchsize_atoms</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>max number of atoms in one batch.
+Defaults to 16384(=16*1024). Disable batch optimization if zero or negative.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="args-for-xtb-calculator" open>
+  <summary>Args for xTB calculator</summary>
+  <p>water (str, optional): water solvation model (choose 'gbsa' or 'alpb')
+    alpb: ALPB solvation model (Analytical Linearized Poisson-Boltzmann).
+    gbsa: generalized Born (GB) model with Surface Area contributions.
+    Defaults to None.</p>
+</details>
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.qed" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">qed</span><span class="p">(</span><span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;QED&#39;</span><span class="p">,</span> <span class="s1">&#39;MolWt&#39;</span><span class="p">,</span> <span class="s1">&#39;LogP&#39;</span><span class="p">,</span> <span class="s1">&#39;TPSA&#39;</span><span class="p">,</span> <span class="s1">&#39;HBD&#39;</span><span class="p">])</span></code>
+
+<a href="#rdworks.mol.Mol.qed" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Updates quantitative estimate of drug-likeness (QED) and other descriptors.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>properties</code></b>
+              (<code><span title="list">list</span>[<span title="str">str</span>]</code>, default:
+                  <code>[&#39;QED&#39;, &#39;MolWt&#39;, &#39;LogP&#39;, &#39;TPSA&#39;, &#39;HBD&#39;]</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Defaults to ['QED', 'MolWt', 'LogP', 'TPSA', 'HBD'].</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="KeyError">KeyError</span></code>
+            –
+          <div class="doc-md-description">
+            <p>if property key is unknown.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.remove_stereo" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">remove_stereo</span><span class="p">()</span></code>
+
+<a href="#rdworks.mol.Mol.remove_stereo" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Removes stereochemistry.</p>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">Mol</span><span class="p">(</span><span class="s2">&quot;C/C=C/C=C\C&quot;</span><span class="p">,</span> <span class="s2">&quot;double_bond&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">remove_stereo</span><span class="p">()</span><span class="o">.</span><span class="n">smiles</span> <span class="o">==</span> <span class="s2">&quot;CC=CC=CC&quot;</span>
+</code></pre></div>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.rename" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">rename</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.rename" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Updates name and conformer names.</p>
+<p>The first conformer name is {prefix}{sep}{start}</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>prefix</code></b>
+              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>prefix of the name. Defaults to ''.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>sep</code></b>
+              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;/&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>separtor betwween prefix and serial number. Defaults to '/'.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>start</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>1</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>first serial number. Defaults to 1.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.report_props" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">report_props</span><span class="p">()</span></code>
+
+<a href="#rdworks.mol.Mol.report_props" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Report properties</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.report_stereo" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">report_stereo</span><span class="p">()</span></code>
+
+<a href="#rdworks.mol.Mol.report_stereo" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Report stereochemistry information for debug</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.serialize" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">serialize</span><span class="p">(</span><span class="n">decimals</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.serialize" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Serialize information necessary to rebuild a Mol object.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>decimals</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>3</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>number of decimal places for float data type. Defaults to 2.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>str</code></b> (              <code><span title="str">str</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>serialized string for json.loads()</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.singlepoint_confs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">singlepoint_confs</span><span class="p">(</span><span class="n">calculator</span><span class="p">,</span> <span class="n">water</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batchsize_atoms</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.singlepoint_confs" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Evaluates potential energy of each conformer without geometry optimization.</p>
+<p>It sets <code>E_tot(kcal/mol)</code> property for each conformer.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>calculator</code></b>
+              (<code><span title="str">str</span> | <span title="collections.abc.Callable">Callable</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>MMFF94 (= MMFF), MMFF94s, UFF, xTB or ASE calculator.
+<code>MMFF94</code> or <code>MMFF</code> - Intended for general use, including organic molecules and proteins,
+    and primarily relies on data from quantum mechanical calculations.
+    It's often used in molecular dynamics simulations.
+<code>MMFF94s</code> - A "static" variant of MMFF94, with adjusted parameters for out-of-plane
+    bending and dihedral torsions to favor planar geometries for specific nitrogen atoms.
+    This makes it better suited for geometry optimization studies where a static,
+    time-averaged structure is desired. The "s" stands for "static".
+<code>UFF</code> - UFF refers to the "Universal Force Field," a force field model used for
+    molecular mechanics calculations. It's a tool for geometry optimization,
+    energy minimization, and exploring molecular conformations in 3D space.
+    UFF is often used to refine conformers generated by other methods,
+    such as random conformer generation, to produce more physically plausible
+    and stable structures.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>fmax</code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>fmax for the calculator convergence. Defaults to 0.05.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>max_iter</code></b>
+              (<code><span title="int">int</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>max iterations for the calculator. Defaults to 1000.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>batchsize_atoms</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>maximum number of atoms in a single batch.
+Setting any number smaller than conf.natoms to disable batch optimization.
+Defaults to 0.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="args-for-xtb-calculator" open>
+  <summary>Args for xTB calculator</summary>
+  <p>water (str, optional): water solvation model (choose 'gbsa' or 'alpb')
+    alpb: ALPB solvation model (Analytical Linearized Poisson-Boltzmann).
+    gbsa: generalized Born (GB) model with Surface Area contributions.
+    Defaults to None.</p>
+</details>
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.sort_confs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">sort_confs</span><span class="p">(</span><span class="n">calculator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.sort_confs" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Sorts by <code>E_tot(kcal/mol)</code> or <code>E_tot(eV)</code> and sets <code>E_rel(kcal/mol)</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>calculator</code></b>
+              (<code><span title="str">str</span> | <span title="collections.abc.Callable">Callable</span> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>MMFF94 (= MMFF), MMFF94s, UFF, or ASE calculator.
+<code>MMFF94</code> or <code>MMFF</code> - Intended for general use, including organic molecules and proteins,
+    and primarily relies on data from quantum mechanical calculations.
+    It's often used in molecular dynamics simulations.
+<code>MMFF94s</code> - A "static" variant of MMFF94, with adjusted parameters for out-of-plane
+    bending and dihedral torsions to favor planar geometries for specific nitrogen atoms.
+    This makes it better suited for geometry optimization studies where a static,
+    time-averaged structure is desired. The "s" stands for "static".
+<code>UFF</code> - UFF refers to the "Universal Force Field," a force field model used for
+    molecular mechanics calculations. It's a tool for geometry optimization,
+    energy minimization, and exploring molecular conformations in 3D space.
+    UFF is often used to refine conformers generated by other methods,
+    such as random conformer generation, to produce more physically plausible
+    and stable structures.</p>
+          </div>
+        </li>
+    </ul>
+        <p>Raises:
+    KeyError: if <code>E_tot(eV)</code> or <code>E_tot(kcal/mol)</code> is not defined.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>modified self.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.to_plot_data_torsion_angle_vs_energy" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">to_plot_data_torsion_angle_vs_energy</span><span class="p">(</span><span class="n">idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.to_plot_data_torsion_angle_vs_energy" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns plot data for torsion angle vs energy.</p>
+<p>For seaborn plot,</p>
+<div class="codehilite"><pre><span></span><code><span class="err">```</span><span class="n">py</span>
+<span class="k">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">.</span><span class="n">props</span><span class="o">[</span><span class="n">&#39;torsion&#39;</span><span class="o">][</span><span class="n">torsion_angle_idx</span><span class="o">]</span>
+<span class="n">df</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pd</span><span class="p">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="err">{</span><span class="nl">ax</span><span class="p">:</span><span class="w"> </span><span class="k">data</span><span class="o">[</span><span class="n">ax</span><span class="o">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ax</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="o">[</span><span class="n">&#39;angle&#39;, &#39;E_rel(kcal/mol)&#39;</span><span class="o">]</span><span class="err">}</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="p">.</span><span class="n">figure</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">clf</span><span class="p">()</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="n">Clear</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">current</span><span class="w"> </span><span class="n">figure</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">prevent</span><span class="w"> </span><span class="n">overlapping</span><span class="w"> </span><span class="n">plots</span>
+
+<span class="n">sns</span><span class="p">.</span><span class="n">set_theme</span><span class="p">()</span>
+<span class="n">sns</span><span class="p">.</span><span class="n">color_palette</span><span class="p">(</span><span class="ss">&quot;tab10&quot;</span><span class="p">)</span>
+<span class="n">sns</span><span class="p">.</span><span class="n">set_style</span><span class="p">(</span><span class="ss">&quot;whitegrid&quot;</span><span class="p">)</span>
+
+<span class="k">if</span><span class="w"> </span><span class="nf">len</span><span class="p">(</span><span class="n">df</span><span class="o">[</span><span class="n">&#39;angle&#39;</span><span class="o">]</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nf">len</span><span class="p">(</span><span class="n">df</span><span class="o">[</span><span class="n">&#39;angle&#39;</span><span class="o">]</span><span class="p">.</span><span class="n">drop_duplicates</span><span class="p">())</span><span class="err">:</span>
+<span class="w">    </span><span class="n">g</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sns</span><span class="p">.</span><span class="n">lineplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="ss">&quot;angle&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">y</span><span class="o">=</span><span class="ss">&quot;E_rel(kcal/mol)&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="k">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">else</span><span class="err">:</span>
+<span class="w">    </span><span class="n">g</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sns</span><span class="p">.</span><span class="n">lineplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="ss">&quot;angle&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">y</span><span class="o">=</span><span class="ss">&quot;E_rel(kcal/mol)&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="k">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">errorbar</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;ci&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">95</span><span class="p">),</span>
+<span class="w">                    </span><span class="n">err_style</span><span class="o">=</span><span class="s1">&#39;bars&#39;</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">g</span><span class="p">.</span><span class="n">xaxis</span><span class="p">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">ticker</span><span class="p">.</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">30</span><span class="p">))</span>
+<span class="n">g</span><span class="p">.</span><span class="n">xaxis</span><span class="p">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">ticker</span><span class="p">.</span><span class="n">ScalarFormatter</span><span class="p">())</span>
+<span class="k">if</span><span class="w"> </span><span class="n">df</span><span class="o">[</span><span class="n">&quot;E_rel(kcal/mol)&quot;</span><span class="o">]</span><span class="p">.</span><span class="nf">max</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nl">upper_limit</span><span class="p">:</span>
+<span class="w">    </span><span class="n">g</span><span class="p">.</span><span class="k">set</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">self</span><span class="p">.</span><span class="n">name</span><span class="p">,</span>
+<span class="w">        </span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Dihedral Angle (degree)&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Relative Energy (Kcal/mol)&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">190</span><span class="p">,</span><span class="w"> </span><span class="mi">190</span><span class="p">),</span>
+<span class="w">        </span><span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="n">upper_limit</span><span class="p">))</span>
+<span class="n">elif</span><span class="w"> </span><span class="n">df</span><span class="o">[</span><span class="n">&quot;E_rel(kcal/mol)&quot;</span><span class="o">]</span><span class="p">.</span><span class="nf">max</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nl">zoomin_limit</span><span class="p">:</span>
+<span class="w">    </span><span class="n">g</span><span class="p">.</span><span class="k">set</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">self</span><span class="p">.</span><span class="n">name</span><span class="p">,</span>
+<span class="w">        </span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Dihedral Angle (degree)&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Relative Energy (Kcal/mol)&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">190</span><span class="p">,</span><span class="w"> </span><span class="mi">190</span><span class="p">),</span>
+<span class="w">        </span><span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="n">zoomin_limit</span><span class="p">))</span>
+<span class="k">else</span><span class="err">:</span>
+<span class="w">    </span><span class="n">g</span><span class="p">.</span><span class="k">set</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">self</span><span class="p">.</span><span class="n">name</span><span class="p">,</span>
+<span class="w">        </span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Dihedral Angle (degree)&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Relative Energy (Kcal/mol)&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">190</span><span class="p">,</span><span class="w"> </span><span class="mi">190</span><span class="p">),)</span>
+<span class="n">g</span><span class="p">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">rotation</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+<span class="k">if</span><span class="w"> </span><span class="nl">svg</span><span class="p">:</span>
+<span class="w">    </span><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StringIO</span><span class="p">()</span>
+<span class="w">    </span><span class="n">plt</span><span class="p">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="nf">format</span><span class="o">=</span><span class="s1">&#39;svg&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="n">plt</span><span class="p">.</span><span class="k">close</span><span class="p">()</span><span class="w"> </span><span class="err">#</span><span class="w"> </span><span class="n">prevents</span><span class="w"> </span><span class="n">duplicate</span><span class="w"> </span><span class="n">plot</span><span class="w"> </span><span class="n">outputs</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">Jupyter</span><span class="w"> </span><span class="n">Notebook</span>
+<span class="w">    </span><span class="n">svg_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">getvalue</span><span class="p">()</span>
+<span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">optimize</span><span class="w"> </span><span class="n">SVG</span><span class="w"> </span><span class="n">string</span>
+<span class="w">    </span><span class="n">scour_options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">{</span>
+<span class="w">        </span><span class="s1">&#39;strip_comments&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">True</span><span class="p">,</span>
+<span class="w">        </span><span class="s1">&#39;strip_ids&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">True</span><span class="p">,</span>
+<span class="w">        </span><span class="s1">&#39;shorten_ids&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">True</span><span class="p">,</span>
+<span class="w">        </span><span class="s1">&#39;compact_paths&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">True</span><span class="p">,</span>
+<span class="w">        </span><span class="s1">&#39;indent_type&#39;</span><span class="err">:</span><span class="w"> </span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="err">}</span>
+<span class="w">    </span><span class="n">svg_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scourString</span><span class="p">(</span><span class="n">svg_string</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="o">=</span><span class="n">scour_options</span><span class="p">)</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">svg_string</span>
+
+<span class="k">else</span><span class="err">:</span>
+<span class="w">    </span><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BytesIO</span><span class="p">()</span>
+<span class="w">    </span><span class="n">plt</span><span class="p">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="nf">format</span><span class="o">=</span><span class="s1">&#39;png&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="n">plt</span><span class="p">.</span><span class="k">close</span><span class="p">()</span><span class="w"> </span><span class="err">#</span><span class="w"> </span><span class="n">prevents</span><span class="w"> </span><span class="n">duplicate</span><span class="w"> </span><span class="n">plot</span><span class="w"> </span><span class="n">outputs</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">Jupyter</span><span class="w"> </span><span class="n">Notebook</span>
+<span class="w">    </span><span class="n">buf</span><span class="p">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="n">img</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Image</span><span class="p">.</span><span class="k">open</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+<span class="w">    </span><span class="n">plt</span><span class="p">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="w">    </span><span class="n">plt</span><span class="p">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span><span class="w"> </span><span class="err">#</span><span class="w"> </span><span class="nl">Optional</span><span class="p">:</span><span class="w"> </span><span class="n">remove</span><span class="w"> </span><span class="n">axes</span>
+<span class="w">    </span><span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+<span class="err">```</span>
+
+<span class="nl">Args</span><span class="p">:</span>
+<span class="w">    </span><span class="n">idx</span><span class="w"> </span><span class="p">(</span><span class="nc">int</span><span class="p">,</span><span class="w"> </span><span class="n">optional</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">0</span><span class="o">-</span><span class="n">based</span><span class="w"> </span><span class="n">torsion</span><span class="w"> </span><span class="n">angle</span><span class="w"> </span><span class="k">index</span><span class="p">.</span>
+<span class="w">        </span><span class="n">Defaults</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="k">None</span><span class="w"> </span><span class="p">(</span><span class="ow">all</span><span class="w"> </span><span class="n">torsion</span><span class="w"> </span><span class="n">angles</span><span class="p">).</span>
+
+<span class="k">Returns</span><span class="err">:</span>
+<span class="w">    </span><span class="err">{</span><span class="s1">&#39;idx&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">list</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;angle&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">list</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;E_rel(kcal/mol)&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">list</span><span class="err">}</span>
+</code></pre></div>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.to_png" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">to_png</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">atom_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">highlight_atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">highlight_bonds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">redraw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">coordgen</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.to_png" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Draw 2D molecule in PNG format.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>width</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>300</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>width. Defaults to 300.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>height</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>300</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>height. Defaults to 300.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>legend</code></b>
+              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>legend. Defaults to ''.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>atom_index</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to show atom index. Defaults to False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>highlight_atoms</code></b>
+              (<code><span title="list">list</span>[<span title="int">int</span>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>atom(s) to highlight. Defaults to None.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>highlight_bonds</code></b>
+              (<code><span title="list">list</span>[<span title="int">int</span>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>bond(s) to highlight. Defaults to None.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>redraw</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to redraw. Defaults to False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>coordgen</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to use coordgen. Defaults to False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>trim</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to trim white margins. Default to True.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="PIL.Image.Image">Image</span></code>
+          –
+          <div class="doc-md-description">
+            <p>Image.Image: output PIL Image object.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.to_sdf" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">to_sdf</span><span class="p">(</span><span class="n">confs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.to_sdf" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns strings of SDF output.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>confs</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to include conformers. Defaults to False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>props</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to include properties. Defaults to True.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>str</code></b> (              <code><span title="str">str</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>strings of SDF output.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.mol.Mol.to_svg" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">to_svg</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">atom_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">highlight_atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">highlight_bonds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">redraw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">coordgen</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#rdworks.mol.Mol.to_svg" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Draw 2D molecule in SVG format.</p>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>For Jupyternotebook, wrap the output with SVG:</p>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">SVG</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">SVG</span><span class="p">(</span><span class="n">libr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to_svg</span><span class="p">())</span>
+</code></pre></div>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>width</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>300</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>width. Defaults to 300.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>height</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>300</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>height. Defaults to 300.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>legend</code></b>
+              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>legend. Defaults to ''.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>atom_index</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to show atom index. Defaults to False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>highlight_atoms</code></b>
+              (<code><span title="list">list</span>[<span title="int">int</span>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>atom(s) to highlight. Defaults to None.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>highlight_bonds</code></b>
+              (<code><span title="list">list</span>[<span title="int">int</span>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>bond(s) to highlight. Defaults to None.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>redraw</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to redraw. Defaults to False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>coordgen</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to use coordgen. Defaults to False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>optimize</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>whether to optimize SVG string. Defaults to True.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>str</code></b> (              <code><span title="str">str</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>SVG string</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "toc.integrate", "search.highlight", "search.suggest", "search.share", "content.code.select", "content.code.copy"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

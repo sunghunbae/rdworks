@@ -1,0 +1,5378 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Chained Workflows built on RDKit">
+      
+      
+        <meta name="author" content="SungHun Bae">
+      
+      
+      
+        <link rel="prev" href="../conf/">
+      
+      
+        <link rel="next" href="../complete/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Microstate - rdworks</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="rdworks" class="md-header__button md-logo" aria-label="rdworks" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            rdworks
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Microstate
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/sunghunbae/rdworks" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../mollibr/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Library
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../mol/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Molecule
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../conf/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Conformer
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../torsion.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Torsion
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Microstate
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../complete/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Complete
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../scaffold/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Scaffold
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../utils/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Utils
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="rdworks" class="md-nav__button md-logo" aria-label="rdworks" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    rdworks
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/sunghunbae/rdworks" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mollibr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Molecule
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conformer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../torsion.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Torsion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Microstate
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Microstate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rdworks.microstate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        microstate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="microstate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.AcidBasePatterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AcidBasePatterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.AcidBasePatternsSimple" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AcidBasePatternsSimple
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.UnreasonablePatterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UnreasonablePatterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.ln10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ln10
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        logger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.smarts_path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        smarts_path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InflectionDetector
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="InflectionDetector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector.curve_info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        curve_info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector.num_plateaus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        num_plateaus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector.num_transitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        num_transitions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector.plateaus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plateaus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector.x" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        x
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector.y" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        y
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector.analyze" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        analyze
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector.detect_plateaus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        detect_plateaus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector.detect_plateaus--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.InflectionDetector.detect_plateaus--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.IonizableSite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IonizableSite
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="IonizableSite">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.IonizableSite-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.IonizableSite.acid_base" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        acid_base
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.IonizableSite.atom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atom
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.IonizableSite.atom_idx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        atom_idx
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.IonizableSite.de" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        de
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.IonizableSite.hs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.IonizableSite.name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.IonizableSite.pr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pr
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.IonizableSite.q" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        q
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QupkakeMicrostates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="QupkakeMicrostates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.acidic_sites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        acidic_sites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.basic_sites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        basic_sites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.calculator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        calculator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.mols" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mols
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.origin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        origin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        states
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.Boltzmann_weighted_average" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boltzmann_weighted_average
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        count
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.enumerate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enumerate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.get_ensemble" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_ensemble
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.get_mol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_mol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.get_populations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_populations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.QupkakeMicrostates.populate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        populate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="State">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.charge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        charge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.energy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        energy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.max_atomic_charge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        max_atomic_charge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.max_formal_charge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        max_formal_charge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.min_atomic_charge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        min_atomic_charge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.min_formal_charge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        min_formal_charge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.origin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        origin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.protomer_rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        protomer_rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.rdmol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rdmol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.rdmolH" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rdmolH
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.ref_ph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ref_ph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.sites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.smiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        smiles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.tautomer_rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tautomer_rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.transformation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        transformation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.can_be_deprotonated_at" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        can_be_deprotonated_at
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.can_be_protonated_at" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        can_be_protonated_at
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        copy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.deserialize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deserialize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.find_ionizable_sites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_ionizable_sites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.get_deprotonated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_deprotonated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.get_protonated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_protonated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.get_tautomers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_tautomers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.hydrogen_count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hydrogen_count
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.ionize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ionize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.serialize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        serialize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.site_info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        site_info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.State.update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        update
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StateEnsemble
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="StateEnsemble">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        states
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        copy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.deserialize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deserialize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.drop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        drop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.get_charge_groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_charge_groups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.get_charge_groups_per_site" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_charge_groups_per_site
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.get_macro_pKa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_macro_pKa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.get_micro_pKa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_micro_pKa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.get_plot_data_pH_vs_charge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_plot_data_pH_vs_charge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.get_plot_data_pH_vs_population" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_plot_data_pH_vs_population
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.get_plot_data_pH_vs_site_charge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_plot_data_pH_vs_site_charge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.get_population" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_population
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.get_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.serialize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        serialize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.set_energies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_energies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.sort" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sort
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateEnsemble.trim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        trim
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StateNetwork
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="StateNetwork">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.initial_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        initial_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.visited_states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        visited_states
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        copy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.deserialize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deserialize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.get_initial_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_initial_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.get_macro_pKa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_macro_pKa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.get_micro_pKa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_micro_pKa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.get_num_edges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_num_edges
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.get_num_nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_num_nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.get_plot_data_pH_vs_charge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_plot_data_pH_vs_charge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.get_plot_data_pH_vs_population" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_plot_data_pH_vs_population
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.get_plot_data_pH_vs_site_charge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_plot_data_pH_vs_site_charge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.get_population" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_population
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.get_state_ensemble" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_state_ensemble
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.serialize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        serialize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.set_energies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_energies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.StateNetwork.trim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        trim
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.Boltzmann_weighted_average" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boltzmann_weighted_average
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.Boltzmann_weights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boltzmann_weights
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rdworks.microstate.beta_constant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        beta_constant
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scaffold/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaffold
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Microstate</h1>
+
+<h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="rdworks.microstate" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>rdworks.microstate</code>
+
+
+<a href="#rdworks.microstate" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h3 id="rdworks.microstate-attributes">Attributes<a href="#rdworks.microstate-attributes" class="headerlink" title="Permanent link">&para;</a></h3>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.microstate.AcidBasePatterns" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">AcidBasePatterns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">smarts_path</span> <span class="o">/</span> <span class="s1">&#39;smarts_pattern.csv&#39;</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.AcidBasePatterns" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.microstate.AcidBasePatternsSimple" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">AcidBasePatternsSimple</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">smarts_path</span> <span class="o">/</span> <span class="s1">&#39;simple_smarts_pattern.csv&#39;</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.AcidBasePatternsSimple" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.microstate.UnreasonablePatterns" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">UnreasonablePatterns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmarts</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;[#6X5]&#39;</span><span class="p">,</span> <span class="s1">&#39;[#7X5]&#39;</span><span class="p">,</span> <span class="s1">&#39;[#8X4]&#39;</span><span class="p">,</span> <span class="s1">&#39;[*r]=[*r]=[*r]&#39;</span><span class="p">,</span> <span class="s1">&#39;[#1]-[*+1]~[*-1]&#39;</span><span class="p">,</span> <span class="s1">&#39;[#1]-[*+1]=,:[*]-,:[*-1]&#39;</span><span class="p">,</span> <span class="s1">&#39;[#1]-[*+1]-,:[*]=,:[*-1]&#39;</span><span class="p">,</span> <span class="s1">&#39;[*+2]&#39;</span><span class="p">,</span> <span class="s1">&#39;[*-2]&#39;</span><span class="p">,</span> <span class="s1">&#39;[#1]-[#8+1].[#8-1,#7-1,#6-1]&#39;</span><span class="p">,</span> <span class="s1">&#39;[#1]-[#7+1,#8+1].[#7-1,#6-1]&#39;</span><span class="p">,</span> <span class="s1">&#39;[#1]-[#8+1].[#8-1,#6-1]&#39;</span><span class="p">,</span> <span class="s1">&#39;[#1]-[#7+1].[#8-1]-[C](-[C,#1])(-[C,#1])&#39;</span><span class="p">,</span> <span class="s1">&#39;[OX1]=[C]-[OH2+1]&#39;</span><span class="p">,</span> <span class="s1">&#39;[NX1,NX2H1,NX3H2]=[C]-[O]-[H]&#39;</span><span class="p">,</span> <span class="s1">&#39;[#6-1]=[*]-[*]&#39;</span><span class="p">,</span> <span class="s1">&#39;[cX2-1]&#39;</span><span class="p">,</span> <span class="s1">&#39;[N+1](=O)-[O]-[H]&#39;</span><span class="p">]))</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.UnreasonablePatterns" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.microstate.ln10" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">ln10</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.ln10" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.microstate.logger" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.logger" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="rdworks.microstate.smarts_path" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">smarts_path</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s1">&#39;rdworks.data.ionized&#39;</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.smarts_path" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<h3 id="rdworks.microstate-classes">Classes<a href="#rdworks.microstate-classes" class="headerlink" title="Permanent link">&para;</a></h3>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="rdworks.microstate.InflectionDetector" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>InflectionDetector</code>
+
+
+<a href="#rdworks.microstate.InflectionDetector" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Inflection point detection with plateau analysis.
+Distinguishes real inflections from noise by analyzing curve behavior.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h5 id="rdworks.microstate.InflectionDetector-attributes">Attributes<a href="#rdworks.microstate.InflectionDetector-attributes" class="headerlink" title="Permanent link">&para;</a></h5>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.InflectionDetector.curve_info" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">curve_info</span> <span class="o">=</span> <span class="s1">&#39;continuous_no_plateaus&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.InflectionDetector.curve_info" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.InflectionDetector.num_plateaus" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">num_plateaus</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plateaus</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.InflectionDetector.num_plateaus" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.InflectionDetector.num_transitions" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">num_transitions</span> <span class="o">=</span> <span class="mi">0</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.InflectionDetector.num_transitions" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.InflectionDetector.plateaus" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">plateaus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detect_plateaus</span><span class="p">()</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.InflectionDetector.plateaus" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.InflectionDetector.x" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">sort_idx</span><span class="p">]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.InflectionDetector.x" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.InflectionDetector.y" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">sort_idx</span><span class="p">]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.InflectionDetector.y" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+<h5 id="rdworks.microstate.InflectionDetector-functions">Functions<a href="#rdworks.microstate.InflectionDetector-functions" class="headerlink" title="Permanent link">&para;</a></h5>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.InflectionDetector.analyze" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">analyze</span><span class="p">(</span><span class="n">require_plateaus</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">high_confidence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.InflectionDetector.analyze" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Complete analysis with plateau consideration.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>require_plateaus</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Only report inflections between clear plateaus</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>dict</code></b> (              <code><span title="list">list</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>analysis results</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.InflectionDetector.detect_plateaus" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">detect_plateaus</span><span class="p">(</span><span class="n">derivative_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_plateau_length</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.InflectionDetector.detect_plateaus" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Detect plateau regions in the curve.</p>
+<h6 id="rdworks.microstate.InflectionDetector.detect_plateaus--parameters">Parameters:<a class="headerlink" href="#rdworks.microstate.InflectionDetector.detect_plateaus--parameters" title="Permanent link">&para;</a></h6>
+<p>derivative_threshold : float or None
+    Max abs(dy/dx) to consider as plateau. If None, auto-calculated
+min_plateau_length : int
+    Minimum number of consecutive points to consider a plateau</p>
+<h6 id="rdworks.microstate.InflectionDetector.detect_plateaus--returns">Returns:<a class="headerlink" href="#rdworks.microstate.InflectionDetector.detect_plateaus--returns" title="Permanent link">&para;</a></h6>
+<p>plateaus : list of dicts with 'start_idx', 'end_idx', 'mean_y', 'std_y'</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="rdworks.microstate.IonizableSite" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>IonizableSite</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#rdworks.microstate.IonizableSite" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>(de)protonation site information</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h5 id="rdworks.microstate.IonizableSite-attributes">Attributes<a href="#rdworks.microstate.IonizableSite-attributes" class="headerlink" title="Permanent link">&para;</a></h5>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.IonizableSite.acid_base" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">acid_base</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.IonizableSite.acid_base" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.IonizableSite.atom" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">atom</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.IonizableSite.atom" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.IonizableSite.atom_idx" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">atom_idx</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.IonizableSite.atom_idx" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.IonizableSite.de" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">de</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.IonizableSite.de" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.IonizableSite.hs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">hs</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.IonizableSite.hs" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.IonizableSite.name" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">name</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.IonizableSite.name" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.IonizableSite.pr" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">pr</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.IonizableSite.pr" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.IonizableSite.q" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">q</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.IonizableSite.q" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="rdworks.microstate.QupkakeMicrostates" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>QupkakeMicrostates</code>
+
+
+<a href="#rdworks.microstate.QupkakeMicrostates" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h5 id="rdworks.microstate.QupkakeMicrostates-attributes">Attributes<a href="#rdworks.microstate.QupkakeMicrostates-attributes" class="headerlink" title="Permanent link">&para;</a></h5>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.acidic_sites" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">acidic_sites</span> <span class="o">=</span> <span class="p">[]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.acidic_sites" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.basic_sites" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">basic_sites</span> <span class="o">=</span> <span class="p">[]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.basic_sites" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.calculator" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">calculator</span> <span class="o">=</span> <span class="n">calculator</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.calculator" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.mols" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">mols</span> <span class="o">=</span> <span class="p">[]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.mols" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.origin" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.origin" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.reference" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">reference</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.reference" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.states" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">states</span> <span class="o">=</span> <span class="p">[]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.states" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+<h5 id="rdworks.microstate.QupkakeMicrostates-functions">Functions<a href="#rdworks.microstate.QupkakeMicrostates-functions" class="headerlink" title="Permanent link">&para;</a></h5>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.Boltzmann_weighted_average" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">Boltzmann_weighted_average</span><span class="p">(</span><span class="n">potential_energies</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.Boltzmann_weighted_average" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Calculate Boltzmann weighted average potential energy at pH 0.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>potential_energies</code></b>
+              (<code><span title="list">list</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>a list of potential energies.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>float</code></b> (              <code><span title="float">float</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>Boltzmann weighted average potential energy.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.count" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">count</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.count" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.enumerate" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="nb">enumerate</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.enumerate" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.get_ensemble" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_ensemble</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.get_ensemble" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.get_mol" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_mol</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.get_mol" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.get_populations" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_populations</span><span class="p">(</span><span class="n">pH</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.get_populations" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.QupkakeMicrostates.populate" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">populate</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.QupkakeMicrostates.populate" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="rdworks.microstate.State" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>State</code>
+
+
+<a href="#rdworks.microstate.State" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h5 id="rdworks.microstate.State-attributes">Attributes<a href="#rdworks.microstate.State-attributes" class="headerlink" title="Permanent link">&para;</a></h5>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.charge" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">charge</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.charge" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.energy" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">energy</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.energy" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.max_atomic_charge" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">max_atomic_charge</span> <span class="o">=</span> <span class="n">max_atomic_charge</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.max_atomic_charge" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.max_formal_charge" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">max_formal_charge</span> <span class="o">=</span> <span class="n">max_formal_charge</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.max_formal_charge" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.min_atomic_charge" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">min_atomic_charge</span> <span class="o">=</span> <span class="n">min_atomic_charge</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.min_atomic_charge" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.min_formal_charge" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">min_formal_charge</span> <span class="o">=</span> <span class="n">min_formal_charge</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.min_formal_charge" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.origin" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.origin" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.protomer_rule" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">protomer_rule</span> <span class="o">=</span> <span class="n">protomer_rule</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.protomer_rule" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.rdmol" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">rdmol</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.rdmol" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.rdmolH" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">rdmolH</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.rdmolH" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.ref_ph" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">ref_ph</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.ref_ph" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.sites" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">sites</span> <span class="o">=</span> <span class="p">[]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.sites" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.smiles" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">smiles</span> <span class="o">=</span> <span class="n">smiles</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.smiles" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.tautomer_rule" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">tautomer_rule</span> <span class="o">=</span> <span class="n">tautomer_rule</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.tautomer_rule" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.State.transformation" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">transformation</span> <span class="o">=</span> <span class="n">transformation</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.State.transformation" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+<h5 id="rdworks.microstate.State-functions">Functions<a href="#rdworks.microstate.State-functions" class="headerlink" title="Permanent link">&para;</a></h5>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.can_be_deprotonated_at" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">can_be_deprotonated_at</span><span class="p">(</span><span class="n">atom_idx</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.State.can_be_deprotonated_at" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Check if an atom can potentially be deprotonated</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.can_be_protonated_at" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">can_be_protonated_at</span><span class="p">(</span><span class="n">atom_idx</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.State.can_be_protonated_at" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Check if an atom can potentially be protonated</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.copy" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">copy</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.State.copy" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.deserialize" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">deserialize</span><span class="p">(</span><span class="n">encoded_str</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.State.deserialize" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Deserialize the state from a string.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.find_ionizable_sites" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">find_ionizable_sites</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.State.find_ionizable_sites" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.get_deprotonated" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_deprotonated</span><span class="p">(</span><span class="n">atom_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.State.get_deprotonated" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Make deprotonated state(s) from the current state.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>atom_idx</code></b>
+              (<code><span title="int">int</span> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>atom index. Defaults to None.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>site_idx</code></b>
+              (<code><span title="int">int</span> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>site index. Defaults to None.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="list">list</span>[<span title="typing.Self">Self</span>]</code>
+          –
+          <div class="doc-md-description">
+            <p>list[Self]: list of deprotonated States.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.get_protonated" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_protonated</span><span class="p">(</span><span class="n">atom_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.State.get_protonated" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Make protonated state(s) from the current state.</p>
+<p>All ionizable sites are considered for protonation unless <code>atom_idx</code> or <code>site_idx</code> is given.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>atom_idx</code></b>
+              (<code><span title="int">int</span> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>atom index. Defaults to None.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>site_idx</code></b>
+              (<code><span title="int">int</span> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>site index. Defaults to None.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="list">list</span>[<span title="typing.Self">Self</span>]</code>
+          –
+          <div class="doc-md-description">
+            <p>list[Self]: list of protonated States.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.get_tautomers" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_tautomers</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.State.get_tautomers" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.hydrogen_count" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">hydrogen_count</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.State.hydrogen_count" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.info" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">info</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.State.info" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.ionize" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">ionize</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.State.ionize" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.serialize" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">serialize</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.State.serialize" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Serialize the state to a string.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.site_info" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">site_info</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.State.site_info" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.State.update" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">update</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.State.update" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="rdworks.microstate.StateEnsemble" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>StateEnsemble</code>
+
+
+<a href="#rdworks.microstate.StateEnsemble" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h5 id="rdworks.microstate.StateEnsemble-attributes">Attributes<a href="#rdworks.microstate.StateEnsemble-attributes" class="headerlink" title="Permanent link">&para;</a></h5>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.StateEnsemble.states" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">states</span> <span class="o">=</span> <span class="p">[]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.StateEnsemble.states" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+<h5 id="rdworks.microstate.StateEnsemble-functions">Functions<a href="#rdworks.microstate.StateEnsemble-functions" class="headerlink" title="Permanent link">&para;</a></h5>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.copy" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">copy</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.copy" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Copy.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.deserialize" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">deserialize</span><span class="p">(</span><span class="n">encoded_str</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.deserialize" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Deserialize states from a string.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.drop" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">drop</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.drop" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Drop duplicate and unreasonable states.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.get_charge_groups" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_charge_groups</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.get_charge_groups" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get charge groups</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>dict</code></b> (              <code><span title="dict">dict</span>[<span title="int">int</span>, <span title="list">list</span>[<span title="int">int</span>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>{charge: [state_idx, ...], ...}</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.get_charge_groups_per_site" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_charge_groups_per_site</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.get_charge_groups_per_site" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get charge groups per atom site</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>dict</code></b> (              <code><span title="dict">dict</span>[<span title="int">int</span>, <span title="dict">dict</span>[<span title="int">int</span>, <span title="list">list</span>[<span title="int">int</span>]]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>{atom_idx: {atom_charge: [state_idx, ...], ...}}</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.get_macro_pKa" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_macro_pKa</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.get_macro_pKa" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute inflection points in pH vs charge that could be macroscopic pKa values.
+For example, ideal pKa transitions should happen at +2.5, +1.5, +0.5, -0.5 in case of +3 to -1 charges.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>ph_values</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Array of pH values to evaluate populations</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>p</code></b>
+              (<code><span title="nd.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Population matrix for each state at each pH</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="list">list</span>[<span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]]</code>
+          –
+          <div class="doc-md-description">
+            <p>list[tuple[float,float]] : [(pH, charge), ...]</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.get_micro_pKa" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_micro_pKa</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.get_micro_pKa" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute inflection points in pH vs site_charge that could be microscopic pKa values
+For example, ideal pKa transitions should happen at +1.5, +0.5, -0.5 in case of +2 to -1 charges.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>ph_values</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Array of pH values to evaluate populations</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>p</code></b>
+              (<code><span title="nd.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Population matrix for each state at each pH</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="dict">dict</span>[<span title="int">int</span>, <span title="list">list</span>[<span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]]]</code>
+          –
+          <div class="doc-md-description">
+            <p>dict[int, tuple[float,float]] : {atom_index: [(pH, charge), ..], ...}</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.get_plot_data_pH_vs_charge" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_plot_data_pH_vs_charge</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.get_plot_data_pH_vs_charge" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.get_plot_data_pH_vs_population" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_plot_data_pH_vs_population</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.get_plot_data_pH_vs_population" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get an Altair plot object for pH-dependent population curve.</p>
+<p>For Altair chart:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">```</span><span class="n">py</span>
+<span class="c1"># plot pH vs population</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">altair</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">alt</span>
+
+<span class="n">width</span> <span class="o">=</span> <span class="mi">600</span>
+<span class="n">height</span> <span class="o">=</span> <span class="mi">300</span>
+<span class="n">palette</span> <span class="o">=</span> <span class="s1">&#39;tableau10&#39;</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="c1"># line plot</span>
+<span class="n">lineplot</span> <span class="o">=</span> <span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">.</span><span class="n">mark_line</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="s1">&#39;pH:Q&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;pH&#39;</span><span class="p">),</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Y</span><span class="p">(</span><span class="s1">&#39;p:Q&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Population&#39;</span><span class="p">),</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s1">&#39;microstate:N&#39;</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Scale</span><span class="p">(</span><span class="n">scheme</span><span class="o">=</span><span class="n">palette</span><span class="p">)),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">properties</span><span class="p">(</span>
+    <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+    <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">)</span>
+
+<span class="c1"># data labels</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">.</span><span class="n">mark_text</span><span class="p">(</span>
+    <span class="n">align</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+    <span class="n">dx</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">dy</span><span class="o">=-</span><span class="mi">5</span>
+<span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="s1">&#39;pH&#39;</span><span class="p">,</span> <span class="n">aggregate</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;argmax&#39;</span><span class="p">:</span> <span class="s1">&#39;p&#39;</span><span class="p">}),</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Y</span><span class="p">(</span><span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="n">aggregate</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;argmax&#39;</span><span class="p">:</span> <span class="s1">&#39;p&#39;</span><span class="p">}),</span>
+    <span class="n">text</span><span class="o">=</span><span class="s1">&#39;microstate:N&#39;</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;microstate:N&#39;</span>
+<span class="p">)</span>
+
+<span class="n">chart</span> <span class="o">=</span> <span class="p">(</span><span class="n">lineplot</span> <span class="o">+</span> <span class="n">labels</span><span class="p">)</span>
+<span class="err">```</span>
+</code></pre></div>
+
+<p>Args:
+    pH (np.ndarray): array of pH values.
+    C (float): constant for pH-dependent dG calculation. Defaults to ln(10).
+    beta (float, optional): <span class="arithmatex">\( \beta = \frac{1}{k_{B} T} \)</span>. Defaults to 1.0.
+    threshold (float) : threshold to ignore low populated microstates. Defaults to 0.0.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code>dict, microstate indices</code>
+          –
+          <div class="doc-md-description">
+            <p>dict: {'pH':list[float], 'p':list[float], 'microstate':list[int(1-based)]}
+microstate indices: list of state index (0-based)</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.get_plot_data_pH_vs_site_charge" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_plot_data_pH_vs_site_charge</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.get_plot_data_pH_vs_site_charge" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.get_population" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_population</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">ln10</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.get_population" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get populations at a given pH array.</p>
+<div class="arithmatex">\[
+\begin{align}
+\Delta G_{i, ref} &amp;= PE_{i} - PE_{ref} \\[0.5em]
+\Delta m_{i, ref} &amp;= charge_{i} - charge _{ref} \\[0.5em]
+\Delta G_{i, pH} &amp;= \Delta G_{i, ref} + \Delta m_{i, ref} C pH \\[0.5em]
+p_{i, pH} &amp;= \frac {exp(-\beta \Delta G_{i, pH})}{\sum_{i} exp(-\beta \Delta G_{i, pH})}
+\end{align}
+\]</div>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>ph_values</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>array of pH values.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>C</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code><a class="autorefs autorefs-internal" title="            ln10 = math.log(10)
+
+  
+      module-attribute
+   (rdworks.microstate.ln10)" href="#rdworks.microstate.ln10">ln10</a></code>
+)
+          –
+          <div class="doc-md-description">
+            <p>constant for pH-dependent dG calculation. Defaults to ln(10).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>beta</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>1.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p><span class="arithmatex">\( \beta = \frac{1}{k_{B} T} \)</span>. Defaults to 1.0.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="numpy.ndarray">ndarray</span></code>
+          –
+          <div class="doc-md-description">
+            <p>np.ndarray:
+array of populations with shape of (number of states, number of pH).</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.get_state" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_state</span><span class="p">(</span><span class="n">index</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.get_state" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get a state by index</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="int">int</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>state index.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>State</code></b> (              <code><a class="autorefs autorefs-internal" title="            State (rdworks.microstate.State)" href="#rdworks.microstate.State">State</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>State</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.info" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">info</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.info" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Print information of all states.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.serialize" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">serialize</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.serialize" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Serialize states to a string.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.set_energies" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">set_energies</span><span class="p">(</span><span class="n">dG</span><span class="p">,</span> <span class="n">ref_ph</span><span class="o">=</span><span class="mf">7.0</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.set_energies" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set energies to states.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>dG</code></b>
+              (<code><span title="list">list</span>[<span title="float">float</span>] | <span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>list or array of energies.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>ref_ph</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>7.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>pH at which the energies are calculated. Defaults to 7.0</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>StateEnsemble</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.size" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">size</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.size" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Number of states.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.sort" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">sort</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.sort" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Sort states by population.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>p</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>array of population.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>StateEnsemble</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateEnsemble.trim" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">trim</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateEnsemble.trim" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Trim states whose pH-dependent population is below a given threshold across pH range 0-14.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>p</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>array of populations.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>threshold</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>0.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>min population. Defaults to 0.0.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>StateEnsemble</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="rdworks.microstate.StateNetwork" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>StateNetwork</code>
+
+
+<a href="#rdworks.microstate.StateNetwork" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h5 id="rdworks.microstate.StateNetwork-attributes">Attributes<a href="#rdworks.microstate.StateNetwork-attributes" class="headerlink" title="Permanent link">&para;</a></h5>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.StateNetwork.graph" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.StateNetwork.graph" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.StateNetwork.initial_state" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">initial_state</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.StateNetwork.initial_state" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="rdworks.microstate.StateNetwork.visited_states" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">visited_states</span> <span class="o">=</span> <span class="p">[]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#rdworks.microstate.StateNetwork.visited_states" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+<h5 id="rdworks.microstate.StateNetwork-functions">Functions<a href="#rdworks.microstate.StateNetwork-functions" class="headerlink" title="Permanent link">&para;</a></h5>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.build" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">build</span><span class="p">(</span><span class="n">smiles</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">transformation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_formal_charge</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_formal_charge</span><span class="o">=+</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_atomic_charge</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_atomic_charge</span><span class="o">=+</span><span class="mi">1</span><span class="p">,</span> <span class="n">protomer_rule</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">tautomer_rule</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.build" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Build the microstate network using BFS from initial state.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.copy" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">copy</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.copy" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Copy.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.deserialize" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">deserialize</span><span class="p">(</span><span class="n">encoded_str</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.deserialize" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Deserialize the network from a string.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.get_initial_state" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_initial_state</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.get_initial_state" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get the initial state.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.get_macro_pKa" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_macro_pKa</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.get_macro_pKa" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Calculatate macro-pKa with provided potential energies.</p>
+<p>Args:</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="list">list</span>[<span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]]</code>
+          –
+          <div class="doc-md-description">
+            <p>list[tuple[float,float]] : [(pH, charge), ...]</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.get_micro_pKa" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_micro_pKa</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.get_micro_pKa" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Calculate micro-pKa with provided potential energies.</p>
+<p>Args:</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="dict">dict</span>[<span title="int">int</span>, <span title="list">list</span>[<span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]]]</code>
+          –
+          <div class="doc-md-description">
+            <p>dict[int,list[float]]: micro-pKa values for each ionizable site.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.get_num_edges" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_num_edges</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.get_num_edges" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Number of edges in the network.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.get_num_nodes" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_num_nodes</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.get_num_nodes" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Number of nodes in the network.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.get_plot_data_pH_vs_charge" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_plot_data_pH_vs_charge</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.get_plot_data_pH_vs_charge" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.get_plot_data_pH_vs_population" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_plot_data_pH_vs_population</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.get_plot_data_pH_vs_population" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Make an Altair plot object for pH-dependent population curve.</p>
+<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="n">Args</span><span class="p">:</span>
+<span class="w">        </span><span class="n">pH</span><span class="w"> </span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span><span class="w"> </span><span class="n">array</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">pH</span><span class="w"> </span><span class="n">values</span><span class="o">.</span>
+<span class="w">        </span><span class="n">C</span><span class="w"> </span><span class="p">(</span><span class="nb nb-Type">float</span><span class="p">):</span><span class="w"> </span><span class="n">constant</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">pH</span><span class="o">-</span><span class="n">dependent</span><span class="w"> </span><span class="n">dG</span><span class="w"> </span><span class="n">calculation</span><span class="o">.</span><span class="w"> </span><span class="n">Defaults</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">ln</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span>
+</code></pre></div>
+
+<p>.            beta (float, optional): <span class="arithmatex">\( \beta = \frac{1}{k_{B} T} \)</span>. Defaults to 1.0.
+            threshold (float) : threshold to ignore low populated microstates. Defaults to 0.0.</p>
+<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="k">Returns</span><span class="err">:</span>
+<span class="w">        </span><span class="p">(</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="n">indices</span><span class="p">)</span><span class="err">:</span>
+<span class="w">            </span><span class="nl">dict</span><span class="p">:</span><span class="w"> </span><span class="err">{</span><span class="s1">&#39;pH&#39;</span><span class="err">:</span><span class="n">list</span><span class="o">[</span><span class="n">float</span><span class="o">]</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;p&#39;</span><span class="err">:</span><span class="n">list</span><span class="o">[</span><span class="n">float</span><span class="o">]</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;microstate&#39;</span><span class="err">:</span><span class="n">list</span><span class="o">[</span><span class="n">int(1-based)</span><span class="o">]</span><span class="err">}</span>
+<span class="w">            </span><span class="nl">indices</span><span class="p">:</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="k">state</span><span class="w"> </span><span class="k">index</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="o">-</span><span class="n">based</span><span class="p">)</span>
+</code></pre></div>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.get_plot_data_pH_vs_site_charge" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_plot_data_pH_vs_site_charge</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.get_plot_data_pH_vs_site_charge" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.get_population" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_population</span><span class="p">(</span><span class="n">ph_values</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">ln10</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.get_population" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Calculate populations with provided potential energies and pH.</p>
+<p>The reference state can be arbitrary and is set to the initial_state here.</p>
+<div class="arithmatex">\[
+\begin{align}
+\Delta G_{i, ref} &amp;= PE_{i} - PE_{ref} \\[0.5em]
+\Delta m_{i, ref} &amp;= charge_{i} - charge _{ref} \\[0.5em]
+\Delta G_{i, pH} &amp;= \Delta G_{i, ref} + \Delta m_{i, ref} C pH \\[0.5em]
+p_{i, pH} &amp;= \frac {exp(-\beta \Delta G_{i, pH})}{\sum_{i} exp(-\beta \Delta G_{i, pH})}
+\end{align}
+\]</div>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>pH</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>array of pH values.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>C</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code><a class="autorefs autorefs-internal" title="            ln10 = math.log(10)
+
+  
+      module-attribute
+   (rdworks.microstate.ln10)" href="#rdworks.microstate.ln10">ln10</a></code>
+)
+          –
+          <div class="doc-md-description">
+            <p>constant for pH-dependent dG calculation. Defaults to ln(10).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>beta</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>1.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p><span class="arithmatex">\( \beta = \frac{1}{k_{B} T} \)</span>. Defaults to 1.0.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="numpy.ndarray">ndarray</span></code>
+          –
+          <div class="doc-md-description">
+            <p>np.ndarray:
+array of populations with shape of (number of states, number of pH).</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.get_state_ensemble" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_state_ensemble</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.get_state_ensemble" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get states by index or slice or all states.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.info" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">info</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.info" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Print information of the network.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.serialize" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">serialize</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.serialize" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Serialize the network to a string.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.set_energies" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">set_energies</span><span class="p">(</span><span class="n">dG</span><span class="p">,</span> <span class="n">ref_ph</span><span class="o">=</span><span class="mf">7.0</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.set_energies" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set energies to states.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>energies</code></b>
+              (<code><span title="list">list</span>[<span title="float">float</span>] | <span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>list or array of energies.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>self</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.size" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">size</span><span class="p">()</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.size" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Number of unique states in the network.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="rdworks.microstate.StateNetwork.trim" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">trim</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.StateNetwork.trim" class="headerlink" title="Permanent link">&para;</a></h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Remove states whose pH-dependent population is not above a given threshold at pH values.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>p</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>array of populations.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>threshold</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>0.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>min population. Defaults to 0.0.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Self</code></b> (              <code><span title="typing.Self">Self</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>StateNetwork</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+<h3 id="rdworks.microstate-functions">Functions<a href="#rdworks.microstate-functions" class="headerlink" title="Permanent link">&para;</a></h3>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.microstate.Boltzmann_weighted_average" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">Boltzmann_weighted_average</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.Boltzmann_weighted_average" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the Boltzmann weighted average of energies.
+    [
+        E_{avg} = \frac{\sum_{i} E_{i} exp(-\beta E_{i})}{\sum_{i} exp(-\beta E_{i})}
+    ]</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>energies (list[float] | np.ndarray) </code></b>
+          –
+          <div class="doc-md-description">
+            <p>energies</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>beta (float) </code></b>
+          –
+          <div class="doc-md-description">
+            <p><span class="arithmatex">\( \beta = \frac{1}{k_{B}T} \)</span> (Kcal/mol)</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="float">float</span></code>
+          –
+          <div class="doc-md-description">
+            <p>float</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.microstate.Boltzmann_weights" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">Boltzmann_weights</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.Boltzmann_weights" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the Boltzmann weights of energies.</p>
+<p>The Boltzmann weight, <span class="arithmatex">\( p_{i} \)</span> is defined as:</p>
+<div class="arithmatex">\[
+p_{i} = \frac{exp(- \beta E_{i}) }{ \sum_{i} exp(- \beta E_{i})}
+\]</div>
+<p>Since the Boltzmann weighted average of any property is taken at a specific temperature,
+changing the temperature means changing the value of <span class="arithmatex">\( \beta \)</span>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>energies (list[float] | np.ndarray) </code></b>
+          –
+          <div class="doc-md-description">
+            <p>energies</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>beta (float) </code></b>
+          –
+          <div class="doc-md-description">
+            <p><span class="arithmatex">\( \beta = \frac{1}{ k_{B} T } \)</span> (Kcal/mol)</p>
+          </div>
+        </li>
+    </ul>
+        <p>Returns:s
+    np.ndarray</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="rdworks.microstate.beta_constant" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">beta_constant</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="mf">278.15</span><span class="p">)</span></code>
+
+<a href="#rdworks.microstate.beta_constant" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the beta constant in Kcal/mol unit at a given temperature (Kelvin).</p>
+<p>The constant <span class="arithmatex">\( \beta \)</span> is defined as:</p>
+<div class="arithmatex">\[
+\beta = \frac{1}{ k_{B} T }
+\]</div>
+<p>where <span class="arithmatex">\( k_{B} \)</span> is the Boltzmann constant and
+T is the absolute temperature of the system in Kelvin.</p>
+<p><span class="arithmatex">\( k_{B} \)</span> = 1.987204259e-3 Kcal/(mol K)</p>
+<p>For example, <span class="arithmatex">\( \beta \)</span> = 0.5527408646408499 Kcal/(mol K) at 278.15 K</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>T (float) </code></b>
+          –
+          <div class="doc-md-description">
+            <p>temperature in Kelvin unit.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "toc.integrate", "search.highlight", "search.suggest", "search.share", "content.code.select", "content.code.copy"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

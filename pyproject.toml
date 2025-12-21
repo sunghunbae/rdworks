@@ -1,6 +1,6 @@
 [project]
 name = "rdworks"
-version = "0.74.0"
+version = "0.74.1"
 description = "Chained Workflow built on RDKit"
 readme = "README.md"
 authors = [

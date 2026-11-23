@@ -1,6 +1,6 @@
 # RDWORKS
 
-Rdworks is inspired by pandas. 
+rdworks is inspired by pandas. 
 Many rdworks functions work like pandas and can be chained into a workflow.
 
 

@@ -178,6 +178,15 @@ def test_import_linter_contracts():
     assert result.returncode == 0, result.stdout[-3000:] + result.stderr[-2000:]
 
 
+def test_conf_reexports_batch_helpers():
+    # Batch and prepare_batches moved to rdworks.batch (imported by conf and torsion)
+    import rdworks.batch
+    import rdworks.conf
+
+    assert rdworks.conf.prepare_batches is rdworks.batch.prepare_batches
+    assert rdworks.conf.Batch is rdworks.batch.Batch
+
+
 @pytest.mark.parametrize("cls_name, kind", [("Conf", "conf"), ("Mol", "mol"), ("MolLibr", "libr")])
 def test_class_dispatch_kinds(cls_name, kind):
     import rdworks

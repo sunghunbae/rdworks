@@ -144,14 +144,11 @@ layers = [
     "mol",
     "conf",
     "torsion | writers | scaffold | stereoisomers | tautomers | fingerprint | descriptor | xml",
-    "std | units | utils | view | xtb",
+    "batch | std | units | utils | view | xtb",
     "cluster",
 ]
 ignore_imports = [
     # PEP 562 backward-compatible aliases, resolved lazily inside __getattr__
     "rdworks.stereoisomers -> rdworks.complete",
     "rdworks.tautomers -> rdworks.complete",
-    # known debt: two batch functions import conf.prepare_batches inside the function
-    # (conf imports torsion); remove this line once prepare_batches lives lower down
-    "rdworks.torsion -> rdworks.conf",
 ]

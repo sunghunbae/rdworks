@@ -85,6 +85,7 @@ rwio.to_sdf(mol, confs=True)          # same as mol.to_sdf(confs=True)
 - split `rdworks.io` into `rdworks.readers` (`read_*`, `merge_csv`; imports `Conf`, `Mol`, and `MolLibr` at module level) and `rdworks.writers` (`to_*`; imports none of them and dispatches on a `_rdworks_kind` class attribute), removing the function-level imports that worked around the circular import; `rdworks.io` re-exports both, so existing imports keep working
 - fixed `utils.compute()` passing each argument tuple as a single argument in its process-pool path, so `read_smi()`, `read_sdf()`, `read_csv()`, and `read_mae()` failed for `max_workers > 1`
 - added an import-linter layers contract (`[tool.importlinter]` in `pyproject.toml`, run by `lint-imports` and `tests/test_import_structure.py`) that keeps lower modules from importing higher ones; made `rdworks.cluster` a regular package (added `__init__.py`) so the contract covers it
+- moved `Batch` and `prepare_batches()` from `rdworks.conf` to the new low-level `rdworks.batch` (`rdworks.conf` re-exports both), so `rdworks.torsion` imports it at module level instead of importing `rdworks.conf` inside two functions; this removes the last circular import between `conf` and `torsion`
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

@@ -12,6 +12,7 @@ from collections import deque
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 from rdkit import Chem
+from rdworks.batch import prepare_batches
 from rdworks.std import clean_2d
 from rdworks.xtb.wrapper import GFN2xTB
 
@@ -636,7 +637,7 @@ def find_shortest_path_excluding_torsion(
 #
 # These functions take an `rdworks.Conf` object. `rdworks.Conf` is not imported at module
 # level because `rdworks.conf` imports this module (circular import). New Conf objects are
-# created with `type(conf)(...)` and `prepare_batches` is imported where it is needed.
+# created with `type(conf)(...)`.
 
 
 def calculate_torsion_energies_one(
@@ -777,8 +778,6 @@ def calculate_torsion_energies_batch(
             and `E_rel(kcal/mol)` (plus `frag` and `frag_indices` if `simplify`).
             E_rel = E_init - median(E_last), shifted so that its minimum is 0.
     """
-    from rdworks.conf import prepare_batches  # deferred to avoid circular import
-
     ref_conf = conf.copy()
 
     data = {
@@ -1086,8 +1085,6 @@ def sp_torsion_energies_batch(
             E_rel = E_sp - E_ref (single-point energy relative to the reference conformer),
             shifted so that its minimum is 0.
     """
-    from rdworks.conf import prepare_batches  # deferred to avoid circular import
-
     ref_conf = conf.copy()  # optimized reference conformer
     evaluated_batch = batch_calculator([ref_conf.rdmol]).run()
     for rdmol in evaluated_batch.mols:

@@ -81,6 +81,7 @@ rwio.to_sdf(mol, confs=True)          # same as mol.to_sdf(confs=True)
 - fixed `breakup()` terminating the whole batch as soon as a parent has only one ring or is fully fused (later parents were skipped) and removing the fusion bond between the first two shared atoms of the parent instead of the fusion bond of the 3-membered ring being removed (epoxides/aziridines fused next to another fusion generated wrong scaffolds)
 - fixed `rigid_fragment_indices()` and `BRICS_fragment_indices()` dropping the atoms at one end of each cut bond and returning empty groups; both now partition all heavy atoms via connected components (replacing the broken `depth_first_search()`)
 - fixed `remove_exocyclic()` raising `ValueError` (empty bond indices) for acyclic molecules and for ring systems connected only through linkers; it is now equivalent to `MurckoScaffold.GetScaffoldForMol()`
+- fixed `mollibr.py` and `microstate.py` importing `Conf`/`Mol` from the `rdworks` package instead of their defining modules, which made `MolLibr`, `MatchedSeries`, `rgroup`, and the microstate classes depend on the import order in `rdworks/__init__.py`; added `tests/test_import_structure.py` to check that every submodule imports on its own
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

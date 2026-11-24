@@ -17,7 +17,8 @@ from rdkit.ML.Cluster import Butina
 from rdkit.SimDivFilters.rdSimDivPickers import MaxMinPicker
 from PIL import Image
 
-from rdworks import Conf, Mol
+from rdworks.conf import Conf
+from rdworks.mol import Mol
 import rdworks.io as rwio  # shared writers (to_xyz, to_sdf, to_svg, ...)
 from rdworks.xml import list_predefined_xml
 from rdworks.fingerprint import calculate_fingerprints

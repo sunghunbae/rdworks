@@ -37,6 +37,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "black>=25.12.0",
+    "import-linter>=2.1",
     "mkdocs>=1.6.1",
     "mkdocs-autorefs>=1.4.3",
     "mkdocs-material>=9.7.0",
@@ -118,6 +119,39 @@ tqdm = ">=4.67.1"
 
 [tool.pixi.feature.test.dependencies]
 pytest = "*"
+import-linter = "*"
 
 [tool.pixi.feature.test.tasks]
 test = "pytest"
+lint-imports = "lint-imports"
+
+# Import layering, checked by `lint-imports` (import-linter).
+# A layer may import any layer below it, never one above it; modules separated by
+# `|` share a layer and must not import each other. Function-level imports count;
+# imports under `if TYPE_CHECKING:` do not.
+[tool.importlinter]
+root_package = "rdworks"
+exclude_type_checking_imports = true
+
+[[tool.importlinter.contracts]]
+name = "rdworks layers"
+type = "layers"
+containers = ["rdworks"]
+layers = [
+    "io",
+    "readers | rgroup | matchedseries | complete | microstate",
+    "mollibr",
+    "mol",
+    "conf",
+    "torsion | writers | scaffold | stereoisomers | tautomers | fingerprint | descriptor | xml",
+    "std | units | utils | view | xtb",
+    "cluster",
+]
+ignore_imports = [
+    # PEP 562 backward-compatible aliases, resolved lazily inside __getattr__
+    "rdworks.stereoisomers -> rdworks.complete",
+    "rdworks.tautomers -> rdworks.complete",
+    # known debt: two batch functions import conf.prepare_batches inside the function
+    # (conf imports torsion); remove this line once prepare_batches lives lower down
+    "rdworks.torsion -> rdworks.conf",
+]

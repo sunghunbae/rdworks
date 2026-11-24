@@ -162,6 +162,22 @@ def test_enumerator_modules_stay_below_classes(module, alias):
     assert lazy == [("__getattr__", "rdworks.complete", [alias])], lazy
 
 
+def test_import_linter_contracts():
+    # runs the layers contract in pyproject.toml ([tool.importlinter]) as part of pytest
+    pytest.importorskip("importlinter")
+    pyproject = pathlib.Path(__file__).resolve().parents[1] / "pyproject.toml"
+    if not pyproject.exists():
+        pytest.skip("pyproject.toml not found next to the tests")
+    code = (
+        "import sys; from importlinter.cli import lint_imports; "
+        f"sys.exit(lint_imports(config_filename={str(pyproject)!r}, no_cache=True, no_logo=True))"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, cwd=pyproject.parent
+    )
+    assert result.returncode == 0, result.stdout[-3000:] + result.stderr[-2000:]
+
+
 @pytest.mark.parametrize("cls_name, kind", [("Conf", "conf"), ("Mol", "mol"), ("MolLibr", "libr")])
 def test_class_dispatch_kinds(cls_name, kind):
     import rdworks

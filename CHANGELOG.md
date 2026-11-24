@@ -84,6 +84,7 @@ rwio.to_sdf(mol, confs=True)          # same as mol.to_sdf(confs=True)
 - fixed `mollibr.py` and `microstate.py` importing `Conf`/`Mol` from the `rdworks` package instead of their defining modules, which made `MolLibr`, `MatchedSeries`, `rgroup`, and the microstate classes depend on the import order in `rdworks/__init__.py`; added `tests/test_import_structure.py` to check that every submodule imports on its own
 - split `rdworks.io` into `rdworks.readers` (`read_*`, `merge_csv`; imports `Conf`, `Mol`, and `MolLibr` at module level) and `rdworks.writers` (`to_*`; imports none of them and dispatches on a `_rdworks_kind` class attribute), removing the function-level imports that worked around the circular import; `rdworks.io` re-exports both, so existing imports keep working
 - fixed `utils.compute()` passing each argument tuple as a single argument in its process-pool path, so `read_smi()`, `read_sdf()`, `read_csv()`, and `read_mae()` failed for `max_workers > 1`
+- added an import-linter layers contract (`[tool.importlinter]` in `pyproject.toml`, run by `lint-imports` and `tests/test_import_structure.py`) that keeps lower modules from importing higher ones; made `rdworks.cluster` a regular package (added `__init__.py`) so the contract covers it
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

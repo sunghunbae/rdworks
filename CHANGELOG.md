@@ -1,5 +1,27 @@
 # Change Log
 
+## Unreleased
+- added pixi workspace and conda package build (`pixi build`) configuration to `pyproject.toml`
+- moved `complete_stereoisomers()` and `can_have_stereo()` to `stereoisomers.py` and `complete_tautomers()` to `tautomers.py` (`rdworks.complete` keeps backward-compatible aliases)
+- fixed `can_have_stereo()` missing E/Z double bonds (e.g. 2-butene, imines, enols), which undercounted `complete_tautomers()` results
+- fixed `complete_stereoisomers()` modifying the input `Mol` (name and stereochemistry)
+- fixed `complete_tautomers()` dropping the name when a single result remains
+- changed `make_confs()` in `Mol` to take explicit `calculator`, `water`, `batchsize_atoms`, `seed`, `prune_rms`, and `verbose` arguments
+```py
+m = m.make_confs(n=50, calculator='UFF', seed=42, prune_rms=0.5)
+```
+- fixed `make_confs()` crashing with `verbose=True` or `calculator=...`, unsupported `method` (e.g. `CONFORGE`), `n < 1`, or failed embedding
+- changed `make_confs()` to fall back to UFF when MMFF94 has no parameters (e.g. B, Se, metals) and to keep existing conformers if it fails
+- replaced shared `Mol.ETKDG_params` with `Mol.etkdg_params()`, which builds fresh multi-threaded ETKDGv3 parameters per call
+- fixed `Conf.singlepoint()` raising an unclear `AttributeError` when a force field cannot be set up
+- fixed `sort_confs()` crashing with `verbose=True` and a `calculator`
+- fixed `drop_confs(cluster=True)` not dropping non-centroid conformers
+- fixed `cluster_confs(method='DQT')` torsion difference wrapping and RMS normalization
+- fixed `Mol.__hash__` to be consistent with `__eq__` (InChIKey), and `__eq__` with non-`Mol` objects
+- fixed `is_matching()` ignoring descriptor bounds of 0 and stripping `~`/`!` beyond the leading marker
+- removed broken `Mol.__next__` (iterate with `for conf in mol`)
+- `align_confs()`, `draw()`, and `has_substr()` now raise `ValueError` for invalid input
+
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`
 - added concurrency to `singlepoint_confs()` in `Mol`

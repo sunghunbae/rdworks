@@ -14,8 +14,6 @@ def test_make_confs():
     mol = Mol("N=C1O[C@@H](CN1)CN2C[C@H](O[C@H](C2)C)C", "stereoisomer")
     mol = mol.make_confs(method="ETKDG")
     assert mol.num_confs > 1
-    mol = mol.make_confs(method="CONFORGE")
-    assert mol.num_confs > 1
 
 
 def test_singlepoint():

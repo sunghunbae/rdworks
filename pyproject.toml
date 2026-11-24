@@ -70,6 +70,11 @@ channels = ["conda-forge"]
 platforms = ["linux-64", "linux-aarch64", "osx-64", "osx-arm64", "win-64"]
 preview = ["pixi-build"]
 
+# Don't write __pycache__/*.pyc: the Databricks /Workspace filesystem rejects it
+# (OSError [Errno 95] Operation not supported). Applies to `pixi shell` and `pixi run`.
+[tool.pixi.activation.env]
+PYTHONDONTWRITEBYTECODE = "1"
+
 # Use the locally built conda package of rdworks in the pixi environments
 [tool.pixi.dependencies]
 rdworks = { path = "." }

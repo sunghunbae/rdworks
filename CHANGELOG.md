@@ -61,6 +61,19 @@ rwio.to_sdf(mol, confs=True)          # same as mol.to_sdf(confs=True)
 - changed `MolLibr.to_png(filename)` to also return the image after saving it
 - changed `to_df()` column order to `name`, `smiles`, then properties in first-seen order (previously varied between Python sessions)
 - `rdworks.io` no longer imports `Conf`, `Mol`, and `MolLibr` at module level (avoids a circular import); the readers import them when called
+- fixed per-site charges (micro-pKa, `get_plot_data_pH_vs_site_charge()`) mixing different atoms: microstates rebuilt from canonical SMILES number atoms differently from the initial state, so all states are now mapped onto the initial state (`microstate.atom_index_map()`) and site indices refer to the atoms of the input SMILES
+- fixed `StateNetwork.build()` adding the initial molecule twice (double-counting its population) when the input SMILES is not canonical; `State` equality, hashing, `StateEnsemble.drop()`, and graph nodes now use the canonical SMILES (`State.key`)
+- fixed `beta_constant()` returning kT instead of 1/kT; the default temperature is now 298.15 K (was 278.15 K)
+- fixed `Boltzmann_weights()` and `Boltzmann_weighted_average()` rejecting integer lists
+- fixed `State.update()` and `State.deserialize()` duplicating ionizable site names; `State` is now hashable
+- fixed tautomers dropping the charge limits and protomer/tautomer rules of their state, and a non-canonical input SMILES being returned as its own tautomer
+- fixed `QupkakeMicrostates.get_populations()` always raising `UnboundLocalError` and `QupkakeMicrostates.populate()` calling a nonexistent `Conf.potential_energy()`
+- `StateEnsemble.get_plot_data_pH_vs_charge()` accepts a list of pH values; `InflectionDetector` raises `ValueError` for fewer than 5 points
+- fixed `render_matrix_grid()` (used by `MolLibr.to_svg()` and `to_png()`) ignoring `atom_index`, `redraw`, and `coordgen`
+- fixed `view.rescale()` always raising `AttributeError` (`np.float`) and scaling about the wrong center; it now scales about the centroid
+- `view.rotation_matrix()` and `view.rotate()` raise `ValueError` for an invalid axis (previously returned None)
+- fixed `DescriptiveDraw.set_style()` and `draw()` style overrides changing the styles of all instances; `draw()` now accepts an empty `circles` list and an integer `r`, and raises `ValueError` for an unknown style
+- fixed `DescriptiveDraw` colours (RGB divided by 255 instead of 256)
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

@@ -19,7 +19,7 @@ from PIL import Image
 from rdworks import Conf, Mol
 from rdworks.view import render_matrix_grid
 from rdworks.xml import list_predefined_xml
-from rdworks.fingerprint import distance_function, calculate_fingerprints
+from rdworks.fingerprint import calculate_fingerprints
 
 
 class MolLibr:
@@ -650,8 +650,11 @@ class MolLibr:
             radius (int, optional): Radius for Morgan fingerprints. Defaults to 2
             n_bits (int, optional): Number of bits for fingerprints. Defaults to 2048
 
+        Raises:
+            ValueError: if fewer than `n` molecules have valid fingerprints.
+
         Returns:
-            List of selected indices
+            Self: modified self with the `n` selected molecules (in library order).
         """
         # Calculate fingerprints
         fps = calculate_fingerprints(self.libr, fp_type, radius, n_bits)
@@ -663,16 +666,12 @@ class MolLibr:
         if len(valid_fps) < n:
             raise ValueError(f"Requested {n} molecules but only {len(valid_fps)} valid")
 
-        # Create distance function
-        def dist_func(i, j):
-            return distance_function(i, j, valid_fps)
-
-        # Run MaxMin picker
+        # Run MaxMin picker (Tanimoto distance on the bit vectors)
         picker = MaxMinPicker()
-        picks = picker.LazyBitVectorPick(dist_func, len(valid_fps), n, seed=seed)
+        picks = picker.LazyBitVectorPick(valid_fps, len(valid_fps), n, seed=seed)
 
-        original_indices = [valid_indices[i] for i in picks]
-        mask = [True for i in range(self.count()) if i in original_indices]
+        original_indices = set(valid_indices[i] for i in picks)
+        mask = [i in original_indices for i in range(self.count())]
 
         self.libr = list(itertools.compress(self.libr, mask))
 

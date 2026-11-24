@@ -35,6 +35,11 @@ m = m.make_confs(n=50, calculator='UFF', seed=42, prune_rms=0.5)
 - fixed `prepare_batches()` creating an empty batch when a conformer exceeds `batchsize_atoms`
 - fixed `batch_singlepoint()` and `batch_optimize()` losing conformer names and props (stale energy and cluster props are dropped); a mismatched result count raises `RuntimeError`
 - changed `str(Conf)` to show the SMILES instead of the object address
+- fixed `calculate_fingerprints()` crashing on `rdworks.Mol` input; it now accepts `rdworks.Mol` and `rdkit.Chem.Mol`, and Morgan fingerprints use `rdFingerprintGenerator` (same bits as the deprecated `GetMorganFingerprintAsBitVect()`)
+- fixed `MolLibr.pick_diverse()`, which always failed: it passed `rdworks.Mol` objects to the fingerprint function and a distance function to `LazyBitVectorPick()`, and would have kept the first `n` molecules instead of the picked ones
+```py
+libr = libr.pick_diverse(10, seed=0, fp_type='morgan')
+```
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

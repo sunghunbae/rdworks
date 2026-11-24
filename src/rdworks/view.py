@@ -1,3 +1,4 @@
+import copy
 from io import BytesIO
 from PIL import Image, ImageChops
 
@@ -257,8 +258,10 @@ def render_matrix_grid(
         width (int, optional): width. Defaults to 200.
         height (int, optional): height. Defaults to 200.
         atom_index (bool, optional): whether to show atom index. Defaults to False.
-        redraw (bool, optional): whether to redraw 2D. Defaults to False.
+        redraw (bool, optional): whether to redraw 2D (removing hydrogens).
+            Molecules without coordinates are always depicted. Defaults to False.
         coordgen (bool, optional): whether to use coordgen to depict. Defaults to False.
+        svg (bool, optional): SVG string (True) or PIL image (False). Defaults to True.
 
     Returns:
         str | Image.Image: SVG string or PIL Image object.
@@ -268,6 +271,19 @@ def render_matrix_grid(
     """
 
     n = len(rdmol)
+
+    # depict copies, as render_2D_mol() does for single molecules
+    # (redraw/coordgen were previously accepted but ignored)
+    if redraw or coordgen:
+        rdDepictor.SetPreferCoordGen(coordgen)
+    depicted = []
+    for m in rdmol:
+        m = Chem.Mol(m)
+        if redraw:
+            m = Chem.RemoveHs(m)
+            rdDepictor.Compute2DCoords(m)
+        depicted.append(m)
+    rdmol = depicted
 
     if isinstance(legend, list):
         assert len(legend) == n, "number of legends and molecules must be the same"
@@ -305,6 +321,12 @@ def render_matrix_grid(
         highlight_atoms_matrix.append(highlight_atoms[i : (i + mols_per_row)])
         highlight_bonds_matrix.append(highlight_bonds[i : (i + mols_per_row)])
 
+    kwargs = {}
+    if atom_index:  # previously accepted but ignored
+        draw_options = Draw.MolDrawOptions()
+        draw_options.addAtomIndices = True
+        kwargs["drawOptions"] = draw_options
+
     return MolsMatrixToGridImage(
         molsMatrix=rdmol_matrix,
         subImgSize=(width, height),
@@ -313,14 +335,17 @@ def render_matrix_grid(
         highlightBondListsMatrix=highlight_bonds_matrix,
         useSVG=svg,
         returnPNG=False,  # whether to return PNG data (True) or a PIL object (False)
+        **kwargs,
     )
 
 
 def rescale(rdmol: Chem.Mol, factor: float = 1.5) -> Chem.Mol:
-    """Returns a copy of `rdmol` by a `factor`.
+    """Returns a copy of `rdmol` scaled by a `factor` about its centroid.
+
+    The centroid of the copy is at the origin.
 
     Args:
-        rdmol (Chem.Mol): input molecule.
+        rdmol (Chem.Mol): input molecule (not modified).
         factor (float): scaling factor.
 
     Returns:
@@ -328,10 +353,12 @@ def rescale(rdmol: Chem.Mol, factor: float = 1.5) -> Chem.Mol:
     """
     transformed_rdmol = Chem.Mol(rdmol)
     center = AllChem.ComputeCentroid(transformed_rdmol.GetConformer())
-    tf = np.identity(4, np.float)
-    tf[0][3] -= center[0]
-    tf[1][3] -= center[1]
+    # x' = factor * (x - center); np.float no longer exists in numpy
+    tf = np.identity(4, dtype=float)
     tf[0][0] = tf[1][1] = tf[2][2] = factor
+    tf[0][3] = -factor * center.x
+    tf[1][3] = -factor * center.y
+    tf[2][3] = -factor * center.z
     AllChem.TransformMol(transformed_rdmol, tf)
     return transformed_rdmol
 
@@ -343,9 +370,14 @@ def rotation_matrix(axis: str, degree: float) -> np.ndarray:
         axis (str): 'x' or 'y' or 'z'.
         degree (float): degree of rotation.
 
+    Raises:
+        ValueError: if `axis` is not 'x', 'y', or 'z'.
+
     Returns:
         np.ndarray: a numpy array of shape (4,4).
     """
+    if not isinstance(axis, str) or axis.lower() not in ("x", "y", "z"):
+        raise ValueError(f"rotation axis must be 'x', 'y', or 'z', got {axis!r}")
     rad = (np.pi / 180.0) * degree
     c = np.cos(rad)
     s = np.sin(rad)
@@ -388,12 +420,10 @@ def rotate(rdmol: Chem.Mol, axis: str, degree: float) -> None:
         axis (str): axis of rotation, 'x' or 'y' or 'z'.
         degree (float): degree of rotation.
     """
-    try:
-        conf = rdmol.GetConformer()
-    except:
+    R = rotation_matrix(axis, degree)  # validates axis before touching rdmol
+    if rdmol.GetNumConformers() == 0:
         AllChem.Compute2DCoords(rdmol)
-        conf = rdmol.GetConformer()
-    R = rotation_matrix(axis, degree)
+    conf = rdmol.GetConformer()
     rdMolTransforms.TransformConformer(conf, R)
 
 
@@ -493,6 +523,8 @@ class DescriptiveDraw:
     }
 
     def __init__(self, rdmol: Chem.Mol, legend: str = "") -> None:
+        # per-instance styles: set_style() and draw() must not change the class defaults
+        self.style = copy.deepcopy(DescriptiveDraw.style)
         self.rdmol = Chem.Mol(rdmol)  # copy of input molecule
         self.rdmolH = Chem.AddHs(rdmol)  # does not modify the input molecule object
         self._set_basic_nitrogens()
@@ -571,10 +603,15 @@ class DescriptiveDraw:
             pos (np.ndarray): position
             style (str): drawing style
         """
-        _ = DescriptiveDraw.style.get(style)
+        if style not in self.style:
+            raise ValueError(
+                f"unknown style {style!r}; see show_styles() or add one with set_style()"
+            )
+        _ = self.style[style]
         circle_ = DescriptiveDraw.circle * _.get("r") + pos
         circle_2d = [Point2D(*c) for c in circle_]
-        color = tuple([v / 256 for v in _.get("rgba")[:3]] + [_.get("rgba")[-1]])
+        # RGB 0-255 -> 0-1
+        color = tuple([v / 255 for v in _.get("rgba")[:3]] + [_.get("rgba")[-1]])
         self.canvas.SetFillPolys(_.get("fill"))
         self.canvas.SetColour(color)
         self.canvas.SetLineWidth(_.get("linewidth"))
@@ -676,12 +713,17 @@ class DescriptiveDraw:
                 pos = self._get_coords(idx)
                 self._draw_circle(pos, "HBD")
 
-        if (isinstance(circles, list) or isinstance(circles, tuple)) and isinstance(
-            circles[0], int
-        ):
-            adhoc = self.style[style]
-            if isinstance(r, float):
-                adhoc.update({"r": r})
+        if circles is not None:
+            circles = list(circles)
+        if circles:
+            if style not in self.style:
+                raise ValueError(
+                    f"unknown style {style!r}; see show_styles() or add one with set_style()"
+                )
+            # a copy: overrides apply to this drawing only, not to the named style
+            adhoc = dict(self.style[style])
+            if isinstance(r, (int, float)) and not isinstance(r, bool):
+                adhoc.update({"r": float(r)})
             if isinstance(linewidth, int):
                 adhoc.update({"linewidth": linewidth})
             if isinstance(fill, bool):

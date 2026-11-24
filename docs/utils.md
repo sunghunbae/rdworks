@@ -70,7 +70,10 @@
 ::: rdworks.units
     handler: python
     
-::: rdworks.io
+::: rdworks.readers
+    handler: python
+
+::: rdworks.writers
     handler: python
 
 ::: rdworks.view

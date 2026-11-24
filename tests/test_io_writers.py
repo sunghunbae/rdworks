@@ -44,15 +44,25 @@ def _sdf_mols(text: str) -> list[Chem.Mol]:
 ##################################################
 
 
-def test_import_io_first_is_not_circular():
-    # conf.py/mol.py/mollibr.py import rdworks.io, so io must load on its own
+def test_import_writers_first_is_not_circular():
+    # conf.py/mol.py/mollibr.py import rdworks.writers, so it must load on its own
     result = subprocess.run(
-        [sys.executable, "-c", "import rdworks.io as m; print(m.to_xyz.__module__)"],
+        [sys.executable, "-c", "import rdworks.writers as m; print(m.to_xyz.__module__)"],
         capture_output=True,
         text=True,
     )
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "rdworks.io"
+    assert result.stdout.strip() == "rdworks.writers"
+
+
+def test_io_reexports_readers_and_writers():
+    # `rdworks.io` stays the public entry point for both halves
+    import rdworks.readers
+    import rdworks.writers
+
+    for name in rwio.__all__:
+        source = rdworks.readers if hasattr(rdworks.readers, name) else rdworks.writers
+        assert getattr(rwio, name) is getattr(source, name), name
 
 
 @pytest.mark.parametrize(

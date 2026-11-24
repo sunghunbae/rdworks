@@ -82,6 +82,7 @@ rwio.to_sdf(mol, confs=True)          # same as mol.to_sdf(confs=True)
 - fixed `rigid_fragment_indices()` and `BRICS_fragment_indices()` dropping the atoms at one end of each cut bond and returning empty groups; both now partition all heavy atoms via connected components (replacing the broken `depth_first_search()`)
 - fixed `remove_exocyclic()` raising `ValueError` (empty bond indices) for acyclic molecules and for ring systems connected only through linkers; it is now equivalent to `MurckoScaffold.GetScaffoldForMol()`
 - fixed `mollibr.py` and `microstate.py` importing `Conf`/`Mol` from the `rdworks` package instead of their defining modules, which made `MolLibr`, `MatchedSeries`, `rgroup`, and the microstate classes depend on the import order in `rdworks/__init__.py`; added `tests/test_import_structure.py` to check that every submodule imports on its own
+- split `rdworks.io` into `rdworks.readers` (`read_*`, `merge_csv`; imports `Conf`, `Mol`, and `MolLibr` at module level) and `rdworks.writers` (`to_*`; imports none of them and dispatches on a `_rdworks_kind` class attribute), removing the function-level imports that worked around the circular import; `rdworks.io` re-exports both, so existing imports keep working
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

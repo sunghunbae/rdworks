@@ -62,7 +62,7 @@ from rdworks.utils import (
 from rdworks.units import ev2kcalpermol
 from rdworks.cluster.autograph import NMRCLUST, DynamicTreeCut, RCKmeans, AutoGraph
 from rdworks.cluster.bitqt import BitQT
-import rdworks.io as rwio  # shared writers (to_xyz, to_sdf, to_svg, ...)
+import rdworks.writers as rwio  # shared writers (to_xyz, to_sdf, to_svg, ...)
 from rdworks.stereoisomers import (
     enumerate_stereoisomers,
     enumerate_ring_bond_stereoisomers,
@@ -77,6 +77,8 @@ logger = logging.getLogger(__name__)
 
 class Mol:
     """Container for molecular structure, conformers, and other information."""
+
+    _rdworks_kind = "mol"  # dispatch key for rdworks.writers
 
     MFP2 = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
 

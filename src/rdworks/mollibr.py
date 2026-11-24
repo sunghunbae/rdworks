@@ -19,12 +19,14 @@ from PIL import Image
 
 from rdworks.conf import Conf
 from rdworks.mol import Mol
-import rdworks.io as rwio  # shared writers (to_xyz, to_sdf, to_svg, ...)
+import rdworks.writers as rwio  # shared writers (to_xyz, to_sdf, to_svg, ...)
 from rdworks.xml import list_predefined_xml
 from rdworks.fingerprint import calculate_fingerprints
 
 
 class MolLibr:
+    _rdworks_kind = "libr"  # dispatch key for rdworks.writers
+
     def __init__(
         self,
         molecules: Iterable | None = None,

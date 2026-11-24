@@ -18,7 +18,7 @@ from PIL import Image
 
 from rdworks.torsion import get_torsion_angle_atom_indices
 from rdworks.xtb.wrapper import GFN2xTB
-import rdworks.io as rwio  # shared writers (to_xyz, to_sdf, to_svg, ...)
+import rdworks.writers as rwio  # shared writers (to_xyz, to_sdf, to_svg, ...)
 
 import rdworks.torsion
 import rdworks.units
@@ -32,6 +32,8 @@ ptable = Chem.GetPeriodicTable()
 
 class Conf:
     """Container for 3D conformers."""
+
+    _rdworks_kind = "conf"  # dispatch key for rdworks.writers
 
     def __init__(
         self,

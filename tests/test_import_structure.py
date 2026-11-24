@@ -101,3 +101,48 @@ def test_no_module_level_import_from_package(path):
         "import from the defining module instead (e.g. `from rdworks.mol import Mol`): "
         + "; ".join(offending)
     )
+
+
+def _rdworks_imports(path: pathlib.Path, module_level_only: bool) -> list[tuple[int, str]]:
+    """Returns (line, imported rdworks module) pairs, including relative imports."""
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    nodes = _module_level_imports(tree) if module_level_only else ast.walk(tree)
+    found = []
+    for node in nodes:
+        if isinstance(node, ast.Import):
+            found += [(node.lineno, a.name) for a in node.names if a.name.split(".")[0] == "rdworks"]
+        elif isinstance(node, ast.ImportFrom):
+            if node.level or (node.module or "").split(".")[0] == "rdworks":
+                found.append((node.lineno, "." * node.level + (node.module or "")))
+    return found
+
+
+# rdworks.conf, rdworks.mol, and rdworks.mollibr import rdworks.writers
+CLASS_MODULES = {"rdworks", "rdworks.conf", "rdworks.mol", "rdworks.mollibr"}
+
+
+def test_writers_do_not_import_classes():
+    # not even inside functions: the writers dispatch on `_rdworks_kind`
+    offending = [
+        (line, name)
+        for line, name in _rdworks_imports(PACKAGE_DIR / "writers.py", module_level_only=False)
+        if name in CLASS_MODULES | {"rdworks.io", "rdworks.readers"} or name.startswith(".")
+    ]
+    assert not offending, offending
+
+
+@pytest.mark.parametrize("module", ["io.py", "readers.py", "writers.py"])
+def test_io_modules_have_no_function_level_rdworks_imports(module):
+    path = PACKAGE_DIR / module
+    every = set(_rdworks_imports(path, module_level_only=False))
+    top = set(_rdworks_imports(path, module_level_only=True))
+    assert not every - top, sorted(every - top)
+
+
+@pytest.mark.parametrize("cls_name, kind", [("Conf", "conf"), ("Mol", "mol"), ("MolLibr", "libr")])
+def test_class_dispatch_kinds(cls_name, kind):
+    import rdworks
+    from rdworks.writers import _kind
+
+    assert getattr(rdworks, cls_name)._rdworks_kind == kind
+    assert _kind(object()) is None

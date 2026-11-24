@@ -1,5 +1,3 @@
-import operator
-
 from rdkit import Chem
 from rdkit.Chem import rdDepictor, inchi
 from rdkit.Chem.MolStandardize import rdMolStandardize
@@ -20,44 +18,42 @@ def generate_inchi_key(rdmol: Chem.Mol) -> str:
         rdmol (Chem.Mol): input molecule
 
     Returns:
-        str: 27-character InChIKey
+        str: 27-character InChIKey, or an empty string if InChI cannot be
+            generated (e.g. molecules with dummy atoms `*`).
     """
     InChI = Chem.MolToInchi(rdmol)
+    if not InChI:
+        return ""
     InChIKey = inchi.InchiToInchiKey(InChI)
 
-    return InChIKey
+    return InChIKey or ""
 
 
 def desalt_smiles(smiles: str) -> tuple[str, Chem.Mol]:
-    """Remove salt(s) from SMILES.
+    """Remove salt(s) from SMILES by keeping the largest fragment.
+
+    The whole SMILES is parsed first, so ring-closure bonds across `.` (e.g. `C1.C1`)
+    are handled correctly, and the returned SMILES is canonical, i.e. identical to
+    the SMILES of the same molecule given without salts.
 
     Args:
         smiles (str): SMILES.
 
+    Raises:
+        ValueError: if `smiles` is invalid.
+
     Returns:
-        (desalted SMILES, desalted Chem.Mol)
+        (desalted canonical SMILES, desalted Chem.Mol)
     """
-    mols = []
-    for smi in smiles.split("."):
-        try:
-            rdmol = Chem.MolFromSmiles(smi)
-            n = rdmol.GetNumAtoms()
-            mols.append((n, smi, rdmol))
-        except:
-            pass
+    rdmol = Chem.MolFromSmiles(smiles)
+    if rdmol is None:
+        raise ValueError(f"desalt_smiles() Error: invalid SMILES {smiles}")
 
-    assert len(mols) > 0, "desalt_smiles() Error: invalid SMILES"
+    # largest fragment by number of (heavy) atoms; ties keep the first fragment
+    fragments = Chem.GetMolFrags(rdmol, asMols=True)
+    desalted_rdmol = max(fragments, key=lambda frag: frag.GetNumAtoms())
 
-    # `sorted` function compares the number of atoms first then smiles and rdmol.
-    # Comparing smiles string would be okay but comparison of rdmol objects will
-    # cause error because comparison operation for Chem.Mol is not supported.
-    # So we need to restrict the key to the number of atoms.
-
-    (n, desalted_smiles, desalted_rdmol) = sorted(
-        mols, key=operator.itemgetter(0), reverse=True
-    )[0]
-
-    return (desalted_smiles, desalted_rdmol)
+    return (Chem.MolToSmiles(desalted_rdmol), desalted_rdmol)
 
 
 def standardize_smiles(smiles: str) -> str:
@@ -93,7 +89,11 @@ def standardize(rdmol: str | Chem.Mol) -> Chem.Mol:
     """Returns standardized rdkit.Chem.Mol object.
 
     Args:
-        smiles (str): input SMILES string.
+        rdmol (str | Chem.Mol): input SMILES string or molecule (not modified).
+
+    Raises:
+        TypeError: if `rdmol` is neither a SMILES string nor a Chem.Mol.
+        ValueError: if `rdmol` is an invalid SMILES.
 
     Returns:
         Chem.Mol: standardized rdkit.Chem.Mol object.
@@ -105,6 +105,12 @@ def standardize(rdmol: str | Chem.Mol) -> Chem.Mol:
         mol = Chem.Mol(rdmol)  # make a copy to avoid modifying the original
     elif isinstance(rdmol, str):
         mol = Chem.MolFromSmiles(rdmol)
+        if mol is None:
+            raise ValueError(f"standardize() Error: invalid SMILES {rdmol}")
+    else:
+        raise TypeError(
+            f"standardize() expects SMILES or Chem.Mol, got {type(rdmol).__name__}"
+        )
 
     # removeHs, disconnect metal atoms, normalize the molecule, reionize the molecule
     clean_mol = rdMolStandardize.Cleanup(mol)
@@ -186,20 +192,25 @@ def clean_2d(
     Args:
         rdmol (Chem.Mol): molecule (not to be modified)
         reset_isotope (bool, optional): whether to reset isotope information. Defaults to True.
-        remove_H (bool, optional): whether to remove implicit hydrogens. Defaults to True.
+        remove_H (bool, optional): whether to remove explicit hydrogens. Defaults to True.
 
     Returns:
-        (cleaned copy of molecule, list of Chem.Mol.Conformers from molecule)
+        (cleaned 2D copy of molecule, list of Chem.Mol each holding one 3D conformer
+        of the input molecule with its original atoms, ready for `Conf()`).
+        3D conformers are returned only if all hydrogens are explicit, as `Conf()`
+        requires; 2D conformers and 3D input without hydrogens yield an empty list.
     """
     mol = Chem.Mol(rdmol)
+
+    # A molecule constructed from SMILES has no conformer; 2D conformers are skipped.
     conformers = []
-
-    if mol.GetNumConformers() == 0:
-        # A molecule constructed from SMILES has no conformer information
-        pass
-
-    elif mol.GetConformer().Is3D() and mol.GetNumConformers() > 1:
-        conformers = [x for x in mol.GetConformers()]
+    has_all_H = rdmol.GetNumAtoms() == rdmol.GetNumAtoms(onlyExplicit=False)
+    for rdConformer in rdmol.GetConformers():
+        if rdConformer.Is3D() and has_all_H:
+            conf_mol = Chem.Mol(rdmol)
+            conf_mol.RemoveAllConformers()
+            conf_mol.AddConformer(Chem.Conformer(rdConformer), assignId=True)
+            conformers.append(conf_mol)
 
     if reset_isotope:
         for atom in mol.GetAtoms():

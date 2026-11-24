@@ -223,9 +223,13 @@ class Mol:
             >>> m1 == m2
 
         Returns:
-            int: hash of the InChIKey.
+            int: hash of the InChIKey (canonical SMILES if no InChIKey).
         """
-        return hash(self.InChIKey)
+        return hash(self._identity_key())
+
+    def _identity_key(self) -> str:
+        """InChIKey, or canonical SMILES when InChI is unavailable (e.g. dummy atoms)."""
+        return self.InChIKey or self.smiles
 
     def __eq__(self, other: Self) -> bool:
         """True if `other` Mol is identical with this Mol.
@@ -243,7 +247,7 @@ class Mol:
         """
         if not isinstance(other, Mol):
             return NotImplemented
-        return self.InChIKey == other.InChIKey
+        return self._identity_key() == other._identity_key()
 
     def __iter__(self) -> Iterator:
         """Yields an iterator of conformers of the molecule.

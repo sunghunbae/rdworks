@@ -232,3 +232,5 @@ def test_is_matching_zero_bound(tmp_path):
     assert Mol("CCOC").is_matching(xml) is True
     # a leading '~' inverts the result
     assert Mol("CCO").is_matching("~" + str(xml)) is True
+
+# std.py regression tests are in tests/test_std.py

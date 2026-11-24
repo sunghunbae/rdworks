@@ -21,6 +21,12 @@ m = m.make_confs(n=50, calculator='UFF', seed=42, prune_rms=0.5)
 - fixed `is_matching()` ignoring descriptor bounds of 0 and stripping `~`/`!` beyond the leading marker
 - removed broken `Mol.__next__` (iterate with `for conf in mol`)
 - `align_confs()`, `draw()`, and `has_substr()` now raise `ValueError` for invalid input
+- fixed `Mol()` from a 3D `Chem.Mol` with explicit hydrogens dropping a single conformer and crashing with multiple conformers (`clean_2d()` now returns one `Chem.Mol` per 3D conformer)
+- fixed `desalt_smiles()` returning non-canonical SMILES, so a salt and its free form now give the same `Mol.smiles`
+- fixed `desalt_smiles()` silently dropping invalid fragments and rejecting ring closures across `.` (e.g. `C1.C1`); invalid SMILES raise `ValueError`
+- fixed `generate_inchi_key()` returning `None` when InChI is unavailable (e.g. dummy atoms); it returns `""` and `Mol` equality falls back to canonical SMILES
+- `standardize()` now raises `ValueError` for invalid SMILES and `TypeError` for unsupported input
+- fixed `SyntaxWarning` (invalid escape sequence) in `xtb/wrapper.py`
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

@@ -74,6 +74,7 @@ rwio.to_sdf(mol, confs=True)          # same as mol.to_sdf(confs=True)
 - `view.rotation_matrix()` and `view.rotate()` raise `ValueError` for an invalid axis (previously returned None)
 - fixed `DescriptiveDraw.set_style()` and `draw()` style overrides changing the styles of all instances; `draw()` now accepts an empty `circles` list and an integer `r`, and raises `ValueError` for an unknown style
 - fixed `DescriptiveDraw` colours (RGB divided by 255 instead of 256)
+- `rgroup.most_common` and `rgroup.most_common_in_NP` are no longer hardcoded; they are loaded lazily from `data/Rgroups.json` on first access (values unchanged)
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

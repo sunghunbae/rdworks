@@ -18,7 +18,7 @@ from rdkit.SimDivFilters.rdSimDivPickers import MaxMinPicker
 from PIL import Image
 
 from rdworks import Conf, Mol
-from rdworks.view import render_matrix_grid
+import rdworks.io as rwio  # shared writers (to_xyz, to_sdf, to_svg, ...)
 from rdworks.xml import list_predefined_xml
 from rdworks.fingerprint import calculate_fingerprints
 
@@ -851,14 +851,25 @@ class MolLibr:
 
         return clusters
 
+    def to_xyz(self, path: str | Path | None = None) -> str:
+        """Returns multi-frame XYZ strings of all conformers of all molecules.
+
+        Args:
+            path (str | Path | None, optional): also write to this file. Defaults to None.
+
+        Returns:
+            str: XYZ formatted strings (the comment line of each frame is the conformer name).
+        """
+        return rwio.to_xyz(self, path=path)
+
     def to_sdf(
         self,
-        path: str | Path,
+        path: str | Path | None = None,
         confs: bool = False,
         props: bool = True,
         separate: bool = False,
-    ) -> None:
-        """Writes to .sdf or .sdf.gz file.
+    ) -> str | None:
+        """Writes to .sdf or .sdf.gz file, or returns SDF strings if `path` is None.
 
         Chem.SDWriter is supposed to write all non-private molecular properties.
 
@@ -866,40 +877,15 @@ class MolLibr:
         `dirname/filename.sdf.gz` -> `dirname/filename_{molecule name}.sdf.gz`
 
         Args:
-            path (str or PosixPath) : output filename or path
+            path (str | Path | None) : output filename or path; None returns the SDF strings.
             confs (bool) : whether to write 3D coordinates and conformer properties. Defaults to False.
             props (bool) : whether to write SDF properties. Defaults to True.
             separate (bool) : write each molecule to separate files. Defaults to False.
-        """
-        if isinstance(path, str):
-            path = Path(path)
-        # PurePosixPath('my/dir/mol.sdf.gz').suffix -> '.gz'
-        # PurePosixPath('my/dir/mol.sdf.gz').suffixes -> ['.sdf', '.gz']
-        # PurePosixPath('my/dir/mol.sdf').name -> 'mol.sdf'
-        # PurePosixPath('my/dir/mol.sdf').with_name('mol2.sdf') -> PurePath('my/dir/mol2.sdf')
-        suffix = path.suffix
-        suffixes = "".join(path.suffixes)
-        prefix = path.name.replace(suffixes, "")
-        if separate:
-            for mol in self.libr:
-                if suffix == ".gz":
-                    with gzip.open(
-                        path.with_name(f"{prefix}_{mol.name}.sdf.gz"), "wt"
-                    ) as f:
-                        f.write(mol.to_sdf(confs, props))
-                else:
-                    with open(path.with_name(f"{prefix}_{mol.name}.sdf"), "w") as f:
-                        f.write(mol.to_sdf(confs, props))
 
-        else:
-            if suffix == ".gz":
-                with gzip.open(path, "wt") as f:
-                    for mol in self.libr:
-                        f.write(mol.to_sdf(confs, props))
-            else:
-                with open(path, "w") as f:
-                    for mol in self.libr:
-                        f.write(mol.to_sdf(confs, props))
+        Returns:
+            str | None: SDF strings if `path` is None.
+        """
+        return rwio.to_sdf(self, path=path, confs=confs, props=props, separate=separate)
 
     def to_smi(self, path: str | Path) -> None:
         """Writes to .smi file.
@@ -926,35 +912,32 @@ class MolLibr:
         atom_index: bool = False,
         redraw: bool = False,
         coordgen: bool = False,
+        path: str | Path | None = None,
     ) -> str:
-        """Writes to a .svg strings for Jupyter notebook.
+        """Returns a grid of 2D depictions as SVG strings for Jupyter notebook.
 
         Args:
-            path (str | Path): output filename or path.
             mols_per_row (int, optional): number of molecules per row. Defaults to 5.
             width (int, optional): width. Defaults to 200.
             height (int, optional): height. Defaults to 200.
             atom_index (bool, optional): whether to show atom index. Defaults to False.
             redraw (bool, optional): whether to redraw. Defaults to False.
             coordgen (bool, optional): whether to use coordgen. Defaults to False.
+            path (str | Path | None, optional): also write to this .svg file. Defaults to None.
+
+        Returns:
+            str: SVG strings.
         """
-
-        rdmols = [mol.rdmol for mol in self.libr]
-        legends = [mol.name for mol in self.libr]
-
-        svg_string = render_matrix_grid(
-            rdmols,
-            legends,
+        return rwio.to_svg(
+            self,
+            path=path,
             mols_per_row=mols_per_row,
             width=width,
             height=height,
             atom_index=atom_index,
             redraw=redraw,
             coordgen=coordgen,
-            svg=True,
         )
-
-        return svg_string
 
     def to_png(
         self,
@@ -965,38 +948,31 @@ class MolLibr:
         atom_index: bool = False,
         redraw: bool = False,
         coordgen: bool = False,
-    ) -> Image.Image | None:
-        """Writes to a .png file.
+    ) -> Image.Image:
+        """Returns a grid of 2D depictions as a PIL image and optionally saves it.
 
         Args:
+            filename (str | Path | None, optional): also save to this .png file. Defaults to None.
             mols_per_row (int, optional): number of molecules per row. Defaults to 5.
             width (int, optional): width. Defaults to 200.
             height (int, optional): height. Defaults to 200.
             atom_index (bool, optional): whether to show atom index. Defaults to False.
             redraw (bool, optional): whether to redraw. Defaults to False.
             coordgen (bool, optional): whether to use coordgen. Defaults to False.
-        """
-        rdmols = [mol.rdmol for mol in self.libr]
-        legends = [mol.name for mol in self.libr]
 
-        img = render_matrix_grid(
-            rdmols,
-            legends,
+        Returns:
+            Image.Image: PIL image.
+        """
+        return rwio.to_png(
+            self,
+            path=filename,
             mols_per_row=mols_per_row,
             width=width,
             height=height,
             atom_index=atom_index,
             redraw=redraw,
             coordgen=coordgen,
-            svg=False,
         )
-
-        if filename is None:
-            return img
-        else:
-            if isinstance(filename, Path):
-                filename = filename.as_posix()
-            img.save(filename)
 
     def to_html(self) -> str:
         """Writes to HTML strings.
@@ -1027,44 +1003,7 @@ class MolLibr:
         Returns:
             pd.DataFrame: pandas DataFrame.
         """
-        if confs:
-            exclude = ["coord"]
-            property_columns = set()
-            for mol in self.libr:
-                for conf in mol.confs:
-                    for k in conf.props:
-                        if k not in exclude:
-                            property_columns.add(k)
-            property_columns = property_columns - set([name, smiles])
-            data = {name: [], smiles: []}
-            data.update({k: [] for k in property_columns})
-            for mol in self.libr:
-                for conf in mol.confs:
-                    data[name].append(conf.name)
-                    data[smiles].append(mol.smiles)
-                    for k in property_columns:
-                        if k in conf.props:
-                            data[k].append(conf.props[k])
-                        else:
-                            data[k].append(None)
-        else:
-            property_columns = set()
-            for mol in self.libr:
-                for k in mol.props:
-                    property_columns.add(k)
-            property_columns = property_columns - set([name, smiles])
-            data = {name: [], smiles: []}
-            data.update({k: [] for k in property_columns})
-            for mol in self.libr:
-                data[name].append(mol.name)
-                data[smiles].append(mol.smiles)
-                for k in property_columns:
-                    if k in mol.props:
-                        data[k].append(mol.props[k])
-                    else:
-                        data[k].append(None)
-
-        return pd.DataFrame(data)
+        return rwio.to_df(self, name=name, smiles=smiles, confs=confs)
 
     def to_csv(
         self,
@@ -1079,8 +1018,7 @@ class MolLibr:
             confs (bool, optional): whether to include conformer properties. Defaults to False.
             decimals (int, optional): decimal places for float numbers. Defaults to 3.
         """
-        df = self.to_df(confs=confs)
-        df.to_csv(path, index=False, float_format=f"%.{decimals}f")
+        rwio.to_csv(self, path, confs=confs, decimals=decimals)
 
     def to_batches(self, batchsize_atoms: int = 1000) -> list:
         """Split workload flexibily into a numer of batches.

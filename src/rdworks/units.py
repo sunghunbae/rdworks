@@ -10,3 +10,6 @@ ev2kcalpermol = 23.060547830619026
 # In mendeleev, the default length unit is pm.
 # picometer (e-12) to angstrom (e-10)
 pm2angstrom = 0.01
+
+# CODATA 2018 Bohr radius: 0.529177210903 angstrom
+angstrom2bohr = 1.0 / 0.529177210903

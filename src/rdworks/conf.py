@@ -6,8 +6,9 @@ import ase
 import itertools
 
 from collections import namedtuple
+from pathlib import Path
 from collections.abc import Callable
-from typing import Self
+from typing import Self, TYPE_CHECKING
 
 from ase.optimize import FIRE
 
@@ -17,11 +18,14 @@ from PIL import Image
 
 from rdworks.torsion import get_torsion_angle_atom_indices
 from rdworks.xtb.wrapper import GFN2xTB
-from rdworks.view import render_png, render_svg
+import rdworks.io as rwio  # shared writers (to_xyz, to_sdf, to_svg, ...)
 
 import rdworks.torsion
 import rdworks.units
 import rdworks.utils
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 ptable = Chem.GetPeriodicTable()
 
@@ -824,22 +828,18 @@ class Conf:
         Returns:
             str: geometry input for psi4 or other quantum chemistry software.
         """
-        lines = [
-            f"{e:5} {x:.3f} {y:.3f} {z:.3f}"
-            for e, (x, y, z) in zip(self.symbols, self.positions)
-        ]
-        return "\n".join(lines)
+        return rwio.to_geometry(self)
 
-    def to_xyz(self) -> str:
-        """Returns XYZ formatted strings.
+    def to_xyz(self, path: str | Path | None = None) -> str:
+        """Returns XYZ formatted strings (the comment line is the conformer name).
+
+        Args:
+            path (str | Path | None, optional): also write to this file. Defaults to None.
 
         Returns:
             str: XYZ formatted strings.
         """
-        lines = [f"{self.natoms}", " "]
-        for e, (x, y, z) in zip(self.symbols, self.positions):
-            lines.append(f"{e:5} {x:23.14f} {y:23.14f} {z:23.14f}")
-        return "\n".join(lines)
+        return rwio.to_xyz(self, path=path)
 
     def to_turbomole(self, bohr: bool = False) -> str:
         """Returns TURBOMOLE coord file formatted strings.
@@ -864,36 +864,20 @@ class Conf:
         Returns:
             str: TURBOMOLE coord formatted file.
         """
-        if bohr:
-            lines = ["$coord"]
-        else:
-            lines = ["$coord angs"]
+        return rwio.to_turbomole(self, bohr=bohr)
 
-        for (x, y, z), e in zip(self.positions, self.symbols):
-            lines.append(f"{x:20.15f} {y:20.15f} {z:20.15f} {e}")
-
-        lines.append("$end")
-
-        return "\n".join(lines)
-
-    def to_sdf(self, props: bool = True) -> str:
-        """Returns the SDF-formatted strings.
+    def to_sdf(self, props: bool = True, path: str | Path | None = None) -> str | None:
+        """Returns the SDF-formatted strings with 3D coordinates.
 
         Args:
-            props (bool, optional): include `props as SDF properties. Defaults to True.
+            props (bool, optional): include `props` as SDF properties. Defaults to True.
+            path (str | Path | None, optional): write to this .sdf (.sdf.gz) file instead
+                of returning the strings. Defaults to None.
 
         Returns:
-            str: strings in the SDF format.
+            str | None: strings in the SDF format if `path` is None.
         """
-        in_memory = io.StringIO()
-        with Chem.SDWriter(in_memory) as f:
-            rdmol = Chem.Mol(self.rdmol)
-            rdmol.SetProp("_Name", self.name)
-            if props:
-                for k, v in self.props.items():
-                    rdmol.SetProp(k, str(v))
-            f.write(rdmol)
-        return in_memory.getvalue()
+        return rwio.to_sdf(self, path=path, props=props)
 
     def to_png(
         self,
@@ -906,6 +890,7 @@ class Conf:
         redraw: bool = False,
         coordgen: bool = False,
         trim: bool = True,
+        path: str | Path | None = None,
     ) -> Image.Image:
         """Draw 2D molecule in PNG format.
 
@@ -924,8 +909,9 @@ class Conf:
             Image.Image: output PIL Image object.
         """
 
-        return render_png(
-            self.rdmol,
+        return rwio.to_png(
+            self,
+            path=path,
             width=width,
             height=height,
             legend=legend,
@@ -948,6 +934,7 @@ class Conf:
         redraw: bool = False,
         coordgen: bool = False,
         optimize: bool = True,
+        path: str | Path | None = None,
     ) -> str:
         """Draw 2D molecule in SVG format.
 
@@ -971,8 +958,9 @@ class Conf:
         Returns:
             str: SVG string
         """
-        return render_svg(
-            self.rdmol,
+        return rwio.to_svg(
+            self,
+            path=path,
             width=width,
             height=height,
             legend=legend,
@@ -983,6 +971,27 @@ class Conf:
             coordgen=coordgen,
             optimize=optimize,
         )
+
+    def to_df(self, name: str = "name", smiles: str = "smiles") -> "pd.DataFrame":
+        """Returns a one-row pandas DataFrame of name, SMILES, and conformer properties.
+
+        Args:
+            name (str, optional): column name for name. Defaults to 'name'.
+            smiles (str, optional): column name for SMILES. Defaults to 'smiles'.
+
+        Returns:
+            pd.DataFrame: pandas DataFrame.
+        """
+        return rwio.to_df(self, name=name, smiles=smiles)
+
+    def to_csv(self, path: str | Path, decimals: int = 3) -> None:
+        """Writes name, SMILES, and conformer properties to a .csv file.
+
+        Args:
+            path (str | Path): output filename or path.
+            decimals (int, optional): decimal places for float numbers. Defaults to 3.
+        """
+        rwio.to_csv(self, path, decimals=decimals)
 
 
 class DummyBatchSinglePointer:

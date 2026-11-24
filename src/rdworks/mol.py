@@ -5,11 +5,10 @@ import logging
 import tempfile
 import os
 
-from io import StringIO
 from pathlib import Path
 from collections import defaultdict
 from collections.abc import Callable
-from typing import Iterator, Self
+from typing import Iterator, Self, TYPE_CHECKING
 from concurrent.futures import ProcessPoolExecutor
 from tqdm import tqdm
 
@@ -63,12 +62,15 @@ from rdworks.utils import (
 from rdworks.units import ev2kcalpermol
 from rdworks.cluster.autograph import NMRCLUST, DynamicTreeCut, RCKmeans, AutoGraph
 from rdworks.cluster.bitqt import BitQT
-from rdworks.view import render_svg, render_png
+import rdworks.io as rwio  # shared writers (to_xyz, to_sdf, to_svg, ...)
 from rdworks.stereoisomers import (
     enumerate_stereoisomers,
     enumerate_ring_bond_stereoisomers,
 )
 
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -1779,39 +1781,56 @@ class Mol:
 
         return invert ^ False
 
-    def to_sdf(self, confs: bool = False, props: bool = True) -> str:
+    def to_geometry(self, index: int = 0) -> str:
+        """Returns geometry input of a conformer for psi4 or other quantum chemistry software.
+
+        Args:
+            index (int, optional): conformer index. Defaults to 0.
+
+        Returns:
+            str: geometry input (atom symbol and X, Y, Z in Angstrom per line).
+        """
+        return rwio.to_geometry(self, index=index)
+
+    def to_xyz(self, path: str | Path | None = None) -> str:
+        """Returns multi-frame XYZ strings of all conformers.
+
+        Args:
+            path (str | Path | None, optional): also write to this file. Defaults to None.
+
+        Returns:
+            str: XYZ formatted strings (the comment line of each frame is the conformer name).
+        """
+        return rwio.to_xyz(self, path=path)
+
+    def to_turbomole(self, index: int = 0, bohr: bool = False) -> str:
+        """Returns TURBOMOLE coord file formatted strings of a conformer.
+
+        Args:
+            index (int, optional): conformer index. Defaults to 0.
+            bohr (bool, optional): whether to use Bohr units. Defaults to False (Angstrom).
+
+        Returns:
+            str: TURBOMOLE coord formatted file.
+        """
+        return rwio.to_turbomole(self, index=index, bohr=bohr)
+
+    def to_sdf(
+        self, confs: bool = False, props: bool = True, path: str | Path | None = None
+    ) -> str | None:
         """Returns strings of SDF output.
 
         Args:
-            confs (bool, optional): whether to include conformers. Defaults to False.
+            confs (bool, optional): whether to write 3D conformers (with molecule and
+                conformer properties) instead of the 2D molecule. Defaults to False.
             props (bool, optional): whether to include properties. Defaults to True.
+            path (str | Path | None, optional): write to this .sdf (.sdf.gz) file instead
+                of returning the strings. Defaults to None.
 
         Returns:
-            str: strings of SDF output.
+            str | None: strings of SDF output if `path` is None.
         """
-        buf = StringIO()
-        with Chem.SDWriter(buf) as f:
-            if confs:
-                for conf in self.confs:
-                    rdmol = Chem.Mol(conf.rdmol)
-                    rdmol.SetProp("_Name", conf.name)
-                    if props:
-                        # molcule props.
-                        for k, v in self.props.items():
-                            rdmol.SetProp(k, str(v))
-                        # conformer props.
-                        for k, v in conf.props.items():
-                            rdmol.SetProp(k, str(v))
-                    f.write(rdmol)
-            else:
-                rdmol = Chem.Mol(self.rdmol)
-                rdmol.SetProp("_Name", self.name)
-                if props:
-                    for k, v in self.props.items():
-                        rdmol.SetProp(k, str(v))
-                f.write(rdmol)
-
-        return buf.getvalue()
+        return rwio.to_sdf(self, path=path, confs=confs, props=props)
 
     def to_png(
         self,
@@ -1824,6 +1843,7 @@ class Mol:
         redraw: bool = False,
         coordgen: bool = False,
         trim: bool = True,
+        path: str | Path | None = None,
     ) -> Image.Image:
         """Draw 2D molecule in PNG format.
 
@@ -1842,8 +1862,9 @@ class Mol:
             Image.Image: output PIL Image object.
         """
 
-        return render_png(
-            self.rdmol,
+        return rwio.to_png(
+            self,
+            path=path,
             width=width,
             height=height,
             legend=legend,
@@ -1866,6 +1887,7 @@ class Mol:
         redraw: bool = False,
         coordgen: bool = False,
         optimize: bool = True,
+        path: str | Path | None = None,
     ) -> str:
         """Draw 2D molecule in SVG format.
 
@@ -1889,8 +1911,9 @@ class Mol:
         Returns:
             str: SVG string
         """
-        return render_svg(
-            self.rdmol,
+        return rwio.to_svg(
+            self,
+            path=path,
             width=width,
             height=height,
             legend=legend,
@@ -1901,6 +1924,32 @@ class Mol:
             coordgen=coordgen,
             optimize=optimize,
         )
+
+    def to_df(
+        self, name: str = "name", smiles: str = "smiles", confs: bool = False
+    ) -> "pd.DataFrame":
+        """Returns a pandas DataFrame of the molecule (or its conformers) and properties.
+
+        Args:
+            name (str, optional): column name for name. Defaults to 'name'.
+            smiles (str, optional): column name for SMILES. Defaults to 'smiles'.
+            confs (bool, optional): one row per conformer with conformer properties
+                instead of one row with molecule properties. Defaults to False.
+
+        Returns:
+            pd.DataFrame: pandas DataFrame.
+        """
+        return rwio.to_df(self, name=name, smiles=smiles, confs=confs)
+
+    def to_csv(self, path: str | Path, confs: bool = False, decimals: int = 3) -> None:
+        """Writes the molecule (or its conformers) and properties to a .csv file.
+
+        Args:
+            path (str | Path): output filename or path.
+            confs (bool, optional): one row per conformer. Defaults to False.
+            decimals (int, optional): decimal places for float numbers. Defaults to 3.
+        """
+        rwio.to_csv(self, path, confs=confs, decimals=decimals)
 
     def to_plot_data_torsion_angle_vs_energy(self, idx: int | None = None) -> dict:
         """Returns plot data for torsion angle vs energy.

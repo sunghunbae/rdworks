@@ -48,6 +48,19 @@ libr = libr.pick_diverse(10, seed=0, fp_type='morgan')
 - fixed `MolLibr.to_html()` always raising `AttributeError`; it embeds an SVG depiction and the name of each molecule
 - fixed `MolLibr.to_batches()` creating an empty batch when a conformer exceeds `batchsize_atoms`; charges are now taken from each conformer
 - removed broken `MolLibr.__next__` (iterate with `for mol in libr`)
+- added shared writers `to_geometry()`, `to_xyz()`, `to_turbomole()`, `to_sdf()`, `to_png()`, `to_svg()`, `to_df()`, and `to_csv()` to `rdworks.io`; they accept `Conf`, `Mol`, `MolLibr`, or `rdkit.Chem.Mol`, and the `to_*` methods of `Conf`, `Mol`, and `MolLibr` now call them (existing calls keep working)
+```py
+import rdworks.io as rwio
+rwio.to_xyz(libr, path='confs.xyz')   # same as libr.to_xyz(path='confs.xyz')
+rwio.to_sdf(mol, confs=True)          # same as mol.to_sdf(confs=True)
+```
+- added `to_geometry()`, `to_xyz()` (all conformers), `to_turbomole()`, `to_df()`, and `to_csv()` to `Mol`; `to_xyz()` to `MolLibr`; and `to_df()` and `to_csv()` to `Conf`
+- added an optional `path` to `to_xyz()`, `to_sdf()`, `to_png()`, and `to_svg()` of `Conf` and `Mol` and to `MolLibr.to_svg()`; `MolLibr.to_sdf()` returns SDF strings when `path` is omitted
+- fixed `to_turbomole(bohr=True)` writing the `$coord` (Bohr) header with Angstrom values; coordinates are now converted (`units.angstrom2bohr` added)
+- changed the XYZ comment line to the conformer name (was blank), so frames of multi-conformer XYZ files are identifiable
+- changed `MolLibr.to_png(filename)` to also return the image after saving it
+- changed `to_df()` column order to `name`, `smiles`, then properties in first-seen order (previously varied between Python sessions)
+- `rdworks.io` no longer imports `Conf`, `Mol`, and `MolLibr` at module level (avoids a circular import); the readers import them when called
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

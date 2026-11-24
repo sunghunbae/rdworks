@@ -196,7 +196,7 @@ $ cp -r xtb-dist/share      /usr/local/ """
                     cmd, cwd=temp_dir, capture_output=True, text=True, encoding="utf-8"
                 )
                 assert proc.returncode == 0, "GFN2xTB() Error: xtb not available"
-                match = re.search("xtb\s+version\s+(?P<version>[\d.]+)", proc.stdout)
+                match = re.search(r"xtb\s+version\s+(?P<version>[\d.]+)", proc.stdout)
                 if match:
                     return match.group("version")
 

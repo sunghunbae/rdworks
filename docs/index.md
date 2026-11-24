@@ -55,7 +55,7 @@ sim = libr.similar(query_Mol, threshold=0.2)
 
 ```py
 from rdworks import Mol, MolLibr
-from rdworks.complete import complete_stereoisomers
+from rdworks.stereoisomers import complete_stereoisomers
 
 mol = Mol(cmpd.smiles)
 stereoisomers = complete_stereoisomers(mol)
@@ -64,6 +64,8 @@ stereoisomers = complete_stereoisomers(mol)
 ### Complete Tautomers
 
 ```py
+from rdworks.tautomers import complete_tautomers
+
 m = Mol("Oc1c(cccc3)c3nc2ccncc12", "tautomer")
 libr = complete_tautomers(m)
 assert libr.count() == 3

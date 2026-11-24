@@ -1,5 +1,6 @@
 from rdworks import Mol, MolLibr
-from rdworks.complete import complete_tautomers, complete_stereoisomers
+from rdworks.tautomers import complete_tautomers
+from rdworks.stereoisomers import complete_stereoisomers
 from rdworks.data.test.example import drugs
 
 from rdkit import Chem

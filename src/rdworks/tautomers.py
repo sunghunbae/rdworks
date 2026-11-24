@@ -9,13 +9,26 @@ https://github.com/xundrug/moltaut
 
 """
 
+from __future__ import annotations
+
 from importlib.resources import files, as_file
 
 from collections import defaultdict
+from typing import TYPE_CHECKING
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem.MolStandardize import rdMolStandardize
+from rdkit.Chem.EnumerateStereoisomers import (
+    EnumerateStereoisomers,
+    StereoEnumerationOptions,
+)
+
+from rdworks.stereoisomers import _unspecified_double_bonds
+
+if TYPE_CHECKING:
+    # rdworks.microstate imports this module, so Mol/MolLibr are imported lazily at runtime
+    from rdworks import Mol, MolLibr
 
 
 class RdkTautomers:
@@ -177,3 +190,43 @@ class ComprehensiveTautomers:
             self.enumerated = self._collect()
 
         return self
+
+
+def complete_tautomers(mol: Mol, **kwargs) -> MolLibr:
+    """Returns a library of enumerated tautomers.
+
+    Args:
+        mol (Mol): input molecule.
+
+    Returns:
+        MolLibr: a library of enumerated tautomers.
+    """
+    from rdworks import MolLibr  # lazy import to avoid a circular import
+
+    enumerator = rdMolStandardize.TautomerEnumerator()
+    enumerator.SetRemoveSp3Stereo(False)
+    enumerator.SetRemoveBondStereo(False)  # Don't remove existing stereo
+    tautomers = list(enumerator.Enumerate(mol.rdmol))
+
+    all_stereoisomers = []
+
+    for tautomer in tautomers:
+        # Find unspecified double bonds that could have E/Z stereo
+        unspecified_bonds = _unspecified_double_bonds(tautomer)
+
+        if unspecified_bonds:
+            # Enumerate all possible stereoisomers
+            opts = StereoEnumerationOptions(onlyUnassigned=True, maxIsomers=50)
+            stereoisomers = list(EnumerateStereoisomers(tautomer, options=opts))
+            all_stereoisomers.extend(stereoisomers)
+        else:
+            all_stereoisomers.append(tautomer)
+
+    # rename() adds serial numbers only when more than one molecule remains;
+    # a single result keeps the input name
+    return (
+        MolLibr(all_stereoisomers)
+        .unique()
+        .rename(mol.name, sep=".")
+        .compute(**kwargs)
+    )

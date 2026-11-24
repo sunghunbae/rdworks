@@ -6,7 +6,7 @@
         show_source: false
 
 
-::: rdworks.tautomerism
+::: rdworks.tautomers
     handler: python
     options:
         show_source: false

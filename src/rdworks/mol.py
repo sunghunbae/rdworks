@@ -24,9 +24,6 @@ from spyrmsd.molecule import Molecule as spyrmsd_Molecule
 from spyrmsd.rmsd import rmsdwrapper as spyrmsd_wrapper
 from spyrmsd.rmsd import symmrmsd as spyrmsd_symmrmsd
 
-import CDPL
-import CDPL.Chem
-import CDPL.ConfGen
 
 from rdkit import Chem, DataStructs
 from rdkit.Chem import (
@@ -617,69 +614,6 @@ class Mol:
                 rdmol_conf.AddConformer(Chem.Conformer(rdConformer))
                 conf = Conf(rdmol_conf)
                 self.confs.append(conf)
-
-        elif method.upper() == "CONFORGE":
-            mol = CDPL.Chem.parseSMILES(self.smiles)
-            # create and initialize an instance of the class ConfGen.ConformerGenerator which
-            # will perform the actual conformer ensemble generation work
-            conf_gen = CDPL.ConfGen.ConformerGenerator()
-            conf_gen.settings.timeout = 60 * 1000  # 60 sec.
-            conf_gen.settings.minRMSD = 0.5
-            conf_gen.settings.energyWindow = 20.0  # kcal/mol(?)
-            conf_gen.settings.maxNumOutputConformers = n
-            # dictionary mapping status codes to human readable strings
-            status_to_str = {
-                CDPL.ConfGen.ReturnCode.UNINITIALIZED: "uninitialized",
-                CDPL.ConfGen.ReturnCode.TIMEOUT: "max. processing time exceeded",
-                CDPL.ConfGen.ReturnCode.ABORTED: "aborted",
-                CDPL.ConfGen.ReturnCode.FORCEFIELD_SETUP_FAILED: "force field setup failed",
-                CDPL.ConfGen.ReturnCode.FORCEFIELD_MINIMIZATION_FAILED: "force field structure refinement failed",
-                CDPL.ConfGen.ReturnCode.FRAGMENT_LIBRARY_NOT_SET: "fragment library not available",
-                CDPL.ConfGen.ReturnCode.FRAGMENT_CONF_GEN_FAILED: "fragment conformer generation failed",
-                CDPL.ConfGen.ReturnCode.FRAGMENT_CONF_GEN_TIMEOUT: "fragment conformer generation timeout",
-                CDPL.ConfGen.ReturnCode.FRAGMENT_ALREADY_PROCESSED: "fragment already processed",
-                CDPL.ConfGen.ReturnCode.TORSION_DRIVING_FAILED: "torsion driving failed",
-                CDPL.ConfGen.ReturnCode.CONF_GEN_FAILED: "conformer generation failed",
-            }
-
-            # We have to create a temporary file and re-read it for storing individual conformers.
-            tmp_dir = os.environ.get("TMPDIR", "/tmp")
-            tmp_name = next(tempfile._get_candidate_names()) + ".sdf"
-            tmp_filename = os.path.join(tmp_dir, tmp_name)
-
-            writer = CDPL.Chem.MolecularGraphWriter(tmp_filename, "sdf")
-            # SB - io.StringIO does not work with Chem.MolecularGraphWriter()
-
-            try:
-                # prepare the molecule for conformer generation
-                CDPL.ConfGen.prepareForConformerGeneration(mol)
-                # generate the conformer ensemble
-                status = conf_gen.generate(mol)
-                # if successful, store the generated conformer ensemble as
-                # per atom 3D coordinates arrays (= the way conformers are represented in CDPKit)
-                if (
-                    status == CDPL.ConfGen.ReturnCode.SUCCESS
-                    or status == CDPL.ConfGen.ReturnCode.TOO_MUCH_SYMMETRY
-                ):
-                    # TOO_MUCH_SYMMETRY: output ensemble may contain duplicates
-                    conf_gen.setConformers(mol)
-                    writer.write(mol)
-                    writer.close()
-                else:
-                    raise RuntimeError(
-                        "Error: conformer generation failed: %s" % status_to_str[status]
-                    )
-            except Exception as e:
-                raise RuntimeError("Error: conformer generation failed: %s" % str(e))
-
-            # tmpfile is automatically closed here but kept, as delete=False was set
-
-            with Chem.SDMolSupplier(tmp_filename, sanitize=True, removeHs=False) as sdf:
-                self.confs = [Conf(m) for m in sdf if m is not None]
-
-            # tmpfile is not deleted here because delete=False
-            # we should remove the file when it is no longer needed
-            os.remove(tmp_filename)
 
         # energy evaluations for ranking
         calculator = kwargs.get("calculator", "MMFF94")

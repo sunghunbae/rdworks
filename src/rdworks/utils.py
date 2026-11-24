@@ -17,9 +17,31 @@ from tqdm import tqdm
 from rdworks.cluster.autograph.centroid import centroid_medoid
 
 
-def serialize(data: Any) -> str:
+def _json_default(obj: Any) -> Any:
+    """Convert numpy types that `json` cannot serialize to native Python types.
+
+    Args:
+        obj (Any): object that `json.dumps()` cannot serialize by itself.
+
+    Raises:
+        TypeError: if `obj` is not a supported numpy type.
+
+    Returns:
+        Any: native Python equivalent of `obj`.
     """
-    Serialize, compress, and encode data to a base64 string.
+    if isinstance(obj, np.integer):
+        return int(obj)
+    if isinstance(obj, np.floating):
+        return float(obj)
+    if isinstance(obj, np.bool_):
+        return bool(obj)
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+
+def serialize(data: Any) -> str:
+    """Serialize, compress, and encode data to a base64 string.
 
     Notes:
         The JSON specification only supports string keys in objects.
@@ -27,15 +49,23 @@ def serialize(data: Any) -> str:
         {1: 'a', 2: 'b', 3: 'c'} --> {'1': 'a', '2': 'b', '3': 'c'}
         Unfortunately, this is a fundamental limitation of JSON itself.
         Integer keys are not valid JSON.
+        Likewise, tuples are restored as lists: (1, 2) --> [1, 2].
+        numpy scalars and arrays (e.g. np.int64, np.float32, np.bool_, np.ndarray)
+        are converted to native Python types (int, float, bool, list).
 
     Args:
-        data: Any JSON-serializable Python object
+        data (Any): JSON-serializable Python object (numpy types allowed).
+
+    Raises:
+        TypeError: if `data` contains an object that cannot be serialized.
 
     Returns:
-        Base64-encoded string
+        str: base64-encoded compressed JSON string.
     """
     # 1. Serialize to JSON string
-    json_str = json.dumps(data, separators=(",", ":"))  # Compact format
+    json_str = json.dumps(
+        data, separators=(",", ":"), default=_json_default
+    )  # Compact format
 
     # 2. Encode to bytes
     json_bytes = json_str.encode("utf-8")
@@ -51,19 +81,30 @@ def serialize(data: Any) -> str:
     return encoded.decode("utf-8")
 
 
-def deserialize(encoded_str: str) -> Any:
-    """
-    Decode, decompress, and deserialize a base64 string back to Python object.
+def deserialize(encoded_str: str | bytes) -> Any:
+    """Decode, decompress, and deserialize a base64 string back to Python object.
 
     Args:
-        encoded_str: Base64-encoded compressed JSON string
+        encoded_str (str | bytes): base64-encoded compressed JSON string from `serialize()`.
+
+    Raises:
+        TypeError: if `encoded_str` is not str or bytes.
+        ValueError: if `encoded_str` cannot be decoded, decompressed, or parsed.
 
     Returns:
-        Deserialized Python object
+        Any: deserialized Python object.
     """
+    if not isinstance(encoded_str, str | bytes):
+        raise TypeError(
+            f"deserialize() expects str or bytes, got {type(encoded_str).__name__}"
+        )
+
     try:
         # 1. Convert string to bytes
-        encoded_bytes = encoded_str.encode("utf-8")
+        if isinstance(encoded_str, str):
+            encoded_bytes = encoded_str.encode("utf-8")
+        else:
+            encoded_bytes = encoded_str
 
         # 2. Base64 decode
         # Base64 output only contains: A-Z, a-z, 0-9, +, /, =
@@ -78,40 +119,65 @@ def deserialize(encoded_str: str) -> Any:
         # 5. Parse JSON
         return json.loads(json_str)
 
-    except (zlib.error, binascii.Error, json.JSONDecodeError, UnicodeDecodeError) as e:
-        raise ValueError(f"Failed to deserialize data: {e}")
+    except (zlib.error, binascii.Error, json.JSONDecodeError, UnicodeError) as e:
+        raise ValueError(f"Failed to deserialize data: {e}") from e
 
 
 def compress_string(data: str) -> str:
-    """compress string to base64-encoded string.
+    """Compress a string to a base64-encoded string.
 
     Args:
         data (str): original string.
 
+    Raises:
+        TypeError: if `data` is not str.
+
     Returns:
         str: base64-encoded compressed string.
     """
+    if not isinstance(data, str):
+        raise TypeError(f"compress_string() expects str, got {type(data).__name__}")
+
     compressed_bytes = zlib.compress(data.encode("utf-8"))
     encoded_str = base64.b64encode(compressed_bytes).decode("utf-8")
     return encoded_str
 
 
 def decompress_string(encoded_str: str) -> str:
-    """decompress base64-encoded string to original string.
+    """Decompress a base64-encoded string from `compress_string()` to the original string.
+
+    Whitespace (e.g. line breaks added when stored in a file) is ignored and
+    missing base64 padding is added automatically.
 
     Args:
         encoded_str (str): base64-encoded compressed string.
 
+    Raises:
+        TypeError: if `encoded_str` is not str.
+        ValueError: if `encoded_str` cannot be decoded or decompressed.
+
     Returns:
         str: original string.
     """
+    if not isinstance(encoded_str, str):
+        raise TypeError(
+            f"decompress_string() expects str, got {type(encoded_str).__name__}"
+        )
+
+    # remove whitespace so that the padding below is computed correctly
+    encoded_str = "".join(encoded_str.split())
+
     # automatically add missing padding
     missing_padding = len(encoded_str) % 4
     if missing_padding:
         encoded_str += "=" * (4 - missing_padding)
-    decoded_bytes = base64.b64decode(encoded_str)
-    decompressed = zlib.decompress(decoded_bytes)
-    return decompressed.decode("utf-8")
+
+    try:
+        decoded_bytes = base64.b64decode(encoded_str, validate=True)
+        decompressed = zlib.decompress(decoded_bytes)
+        return decompressed.decode("utf-8")
+    except (zlib.error, binascii.Error, UnicodeError) as e:
+        raise ValueError(f"Failed to decompress string: {e}") from e
 
 
 def compute(fn: Callable, largs: list, **kwargs) -> list:

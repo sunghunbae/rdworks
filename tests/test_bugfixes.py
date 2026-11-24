@@ -4,8 +4,10 @@ import pytest
 from rdkit import Chem
 from rdkit.Chem import rdMolTransforms
 
-from rdworks import Mol
+from rdworks import Mol, MolLibr
+from rdworks.io import read_csv, read_sdf, read_smi
 from rdworks.stereoisomers import can_have_stereo, complete_stereoisomers
+from rdworks.utils import compute
 from rdworks.tautomers import complete_tautomers
 
 
@@ -232,5 +234,49 @@ def test_is_matching_zero_bound(tmp_path):
     assert Mol("CCOC").is_matching(xml) is True
     # a leading '~' inverts the result
     assert Mol("CCO").is_matching("~" + str(xml)) is True
+
+
+##################################################
+### utils.compute / parallel readers
+##################################################
+
+
+@pytest.mark.parametrize("progress", [False, True])
+def test_compute_parallel_unpacks_arguments(progress):
+    # the process-pool path used to pass each argument tuple as a single argument
+    largs = [(7, 2), (9, 4), (10, 3)]
+    serial = compute(divmod, largs, max_workers=1, progress=progress)
+    parallel = compute(divmod, largs, max_workers=2, chunksize=1, progress=progress)
+    assert serial == parallel == [(3, 1), (2, 1), (3, 1)]
+
+
+def test_compute_parallel_empty():
+    assert compute(divmod, [], max_workers=2) == []
+
+
+@pytest.fixture
+def small_libr_files(tmp_path):
+    smiles = ["CCO", "c1ccccc1O", ACETAMINOPHEN]
+    names = ["ethanol", "phenol", "apap"]
+    libr = MolLibr(smiles, names)
+    (tmp_path / "t.smi").write_text("".join(f"{s} {n}\n" for s, n in zip(smiles, names)))
+    libr.to_sdf(path=tmp_path / "t.sdf")
+    libr.to_csv(tmp_path / "t.csv")
+    return tmp_path, names
+
+
+@pytest.mark.parametrize("reader", ["smi", "sdf", "csv"])
+def test_readers_parallel(small_libr_files, reader):
+    # read_smi/read_sdf/read_csv used to fail with TypeError for max_workers > 1
+    path, names = small_libr_files
+    read = {
+        "smi": lambda **kw: read_smi(path / "t.smi", **kw),
+        "sdf": lambda **kw: read_sdf(path / "t.sdf", **kw),
+        "csv": lambda **kw: read_csv(path / "t.csv", smiles="smiles", name="name", **kw),
+    }[reader]
+    serial = read()
+    parallel = read(max_workers=2, chunksize=1)
+    assert [m.name for m in parallel] == [m.name for m in serial] == names
+    assert [m.smiles for m in parallel] == [m.smiles for m in serial]
 
 # std.py regression tests are in tests/test_std.py

@@ -180,22 +180,41 @@ def decompress_string(encoded_str: str) -> str:
         raise ValueError(f"Failed to decompress string: {e}") from e
 
 
+def _call_with_args(fn_and_args: tuple) -> Any:
+    """Calls `fn(*args)` for `(fn, args)`; a module-level function so it can be pickled."""
+    fn, args = fn_and_args
+    return fn(*args)
+
+
 def compute(fn: Callable, largs: list, **kwargs) -> list:
+    """Returns `[fn(*args) for args in largs]`, optionally in parallel processes.
+
+    Args:
+        fn (Callable): function (or class) to call; must be picklable for
+            `max_workers > 1`.
+        largs (list): a list of argument tuples, one tuple per call.
+        max_workers (int, optional): number of worker processes. Defaults to 1 (serial).
+        chunksize (int, optional): number of calls sent to a worker at once. Defaults to 10.
+        progress (bool, optional): whether to show a progress bar. Defaults to False.
+        desc (str, optional): progress bar description. Defaults to "Progress".
+
+    Returns:
+        list: results in the order of `largs`.
+    """
     max_workers = kwargs.get("max_workers", 1)
     chunksize = kwargs.get("chunksize", 10)
     progress = kwargs.get("progress", False)
     desc = kwargs.get("desc", "Progress")
     n = len(largs)
     if max_workers > 1:
+        # unpack each argument tuple, like the serial path below
+        calls = [(fn, args) for args in largs]
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            mapped = executor.map(_call_with_args, calls, chunksize=chunksize)
             if progress:
-                results = list(
-                    tqdm(
-                        executor.map(fn, largs, chunksize=chunksize), desc=desc, total=n
-                    )
-                )
+                results = list(tqdm(mapped, desc=desc, total=n))
             else:
-                results = list(executor.map(fn, largs, chunksize=chunksize))
+                results = list(mapped)
     else:
         if progress:
             results = [fn(*larg) for larg in tqdm(largs, desc=desc, total=n)]

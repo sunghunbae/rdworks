@@ -75,6 +75,12 @@ rwio.to_sdf(mol, confs=True)          # same as mol.to_sdf(confs=True)
 - fixed `DescriptiveDraw.set_style()` and `draw()` style overrides changing the styles of all instances; `draw()` now accepts an empty `circles` list and an integer `r`, and raises `ValueError` for an unknown style
 - fixed `DescriptiveDraw` colours (RGB divided by 255 instead of 256)
 - `rgroup.most_common` and `rgroup.most_common_in_NP` are no longer hardcoded; they are loaded lazily from `data/Rgroups.json` on first access (values unchanged)
+- fixed `connect_core_and_chains()` crashing with `AttributeError` on invalid input SMILES (it returns `None` as documented) and on a bare dummy atom with no neighbor, and `expand_rgroup()` crashing in `MolLibr.rename()` when a combination cannot be connected (e.g. pentavalent carbon); failed combinations are now skipped with a message
+- removed broken `MatchedSeries.__next__` (iterate with `for s in series`) and fixed the `template_coord2D` attribute typo (`template_coords2D` was never set)
+- fixed `MatchedSeries` helpers (`get_attachment_orientation()`, `calculate_bond_length()`, `get_average_bond_length()`, `standardize_rgroup_scales()`, `template()`) computing 2D coordinates in-place on the input molecules; an unknown `sort_props` entry raises `ValueError` instead of crashing with `TypeError` during sorting
+- fixed `breakup()` terminating the whole batch as soon as a parent has only one ring or is fully fused (later parents were skipped) and removing the fusion bond between the first two shared atoms of the parent instead of the fusion bond of the 3-membered ring being removed (epoxides/aziridines fused next to another fusion generated wrong scaffolds)
+- fixed `rigid_fragment_indices()` and `BRICS_fragment_indices()` dropping the atoms at one end of each cut bond and returning empty groups; both now partition all heavy atoms via connected components (replacing the broken `depth_first_search()`)
+- fixed `remove_exocyclic()` raising `ValueError` (empty bond indices) for acyclic molecules and for ring systems connected only through linkers; it is now equivalent to `MurckoScaffold.GetScaffoldForMol()`
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

@@ -42,12 +42,22 @@ def remove_exocyclic(rdmol: Chem.Mol) -> Chem.Mol:
         fg_rc = [rdMolDescriptors.CalcNumRings(g) for g in fg_mol]
         if 0 in fg_rc:  # if one of the fragmented parts has no ring system
             xbs.append(b.GetIdx())
+    if not xbs:
+        # no exocyclic chain bonds to cut
+        if rdMolDescriptors.CalcNumRings(rdmol) == 0:
+            # acyclic molecule has no scaffold (same as MurckoScaffold.GetScaffoldForMol)
+            return Chem.Mol()
+        # ring systems are only connected through linkers: nothing to remove
+        return Chem.Mol(rdmol)
     fg_smi = Chem.MolToSmiles(Chem.FragmentOnBonds(rdmol, xbs, addDummies=False)).split(
         "."
     )
     fg_mol = [Chem.MolFromSmiles(x) for x in fg_smi]
     fg_rc = [rdMolDescriptors.CalcNumRings(g) for g in fg_mol]
     res = sorted(zip(fg_mol, fg_rc), key=lambda x: x[1], reverse=True)
+    if res[0][1] == 0:
+        # acyclic molecule has no scaffold (same as MurckoScaffold.GetScaffoldForMol)
+        return Chem.Mol()
     molframe = res[0][0]
 
     return molframe
@@ -137,9 +147,9 @@ def breakup(
 
     children = []
     for parent, smiles, nr, rings, priority in parents:
-        # terminate recursion if parents have only one ring or more than 10 rings
+        # a parent with only one ring or more than 10 rings has no children
         if nr == 1 or nr > 10:
-            return parents
+            continue
         # flatten atom index in all rings
         atomsInRings = [ai for ring in rings for ai in ring]
         # avoid removing atoms shared between two or more rings
@@ -149,12 +159,12 @@ def breakup(
         fused_rings = sum(
             [1 for ring in rings if len(set(ring).intersection(atomsShared)) > 0]
         )
-        # terminate if parents have only one big fused ring system such that
+        # skip a parent having only one big fused ring system such that
         # every ring has at least one shared atom
         remove_linker_enforced = False
         if nr > 5:
             if nr == fused_rings:  # all rings are fused
-                return parents
+                continue
             else:
                 remove_linker_enforced = True
         # number of aromatic rings
@@ -265,9 +275,11 @@ def breakup(
                 # fused three-membered ring, epoxides and aziridines
                 # removing an atom changes atom indexes
                 # so it should be done at the end
-                rwmol.RemoveBond(atomsShared[0], atomsShared[1])
+                # the fusion bond of the ring being removed (its two shared atoms),
+                # not the first two shared atoms of the whole parent
+                rwmol.RemoveBond(atomsToRemain[0], atomsToRemain[1])
                 rwmol.AddBond(
-                    atomsShared[0], atomsShared[1], order=Chem.BondType.DOUBLE
+                    atomsToRemain[0], atomsToRemain[1], order=Chem.BondType.DOUBLE
                 )
                 rwmol.RemoveAtom(atomsToRemove[0])
             else:
@@ -492,39 +504,45 @@ def BRICS_fragmented(
     return lfrag_rdmol
 
 
-def depth_first_search(
-    rdatom: Chem.Atom,
-    origin_atom: Chem.Atom,
-    end_idx: int,
-    group: list[int],
-    BRICS_bonds: list[tuple[int, int]],
+def connected_components(
+    rdmol: Chem.Mol, cut_bonds: list[tuple[int, int]]
 ) -> list[list[int]]:
-    """Does recursive depth-first search.
+    """Returns atom indices of connected components after cutting the given bonds.
+
+    The atoms at both ends of a cut bond stay in the component they are
+    connected to, so every atom belongs to exactly one component.
 
     Args:
-        rdatom (Chem.Atom): input atom.
-        origin_atom (Chem.Atom): origin atom.
-        end_idx (int): end index.
-        group (list[int]): group to be appended by the function.
-        BRICS_bonds (list[tuple[int,int]]): list of bonds(tuple of two indexes)
+        rdmol (Chem.Mol): input molecule.
+        cut_bonds (list[tuple[int,int]]): bonds (tuple of two indexes) to cut.
 
     Returns:
-        list[list[int]] or None: search output.
+        list[list[int]]: atom indices of each connected component.
     """
-    bonded_atoms = rdatom.GetNeighbors()
-    if (len(bonded_atoms) == 1) and (bonded_atoms[0] == origin_atom):
-        return
-
-    for atom in bonded_atoms:
-        idx = atom.GetIdx()
-        if (
-            (idx == end_idx)
-            or (idx in group)
-            or (sorted([rdatom.GetIdx(), idx]) in BRICS_bonds)
-        ):
+    cuts = {tuple(sorted(b)) for b in cut_bonds}
+    adjacency = {atom.GetIdx(): [] for atom in rdmol.GetAtoms()}
+    for bond in rdmol.GetBonds():
+        (i, j) = (bond.GetBeginAtomIdx(), bond.GetEndAtomIdx())
+        if (min(i, j), max(i, j)) in cuts:
             continue
-        group.append(idx)
-        depth_first_search(atom, rdatom, end_idx, group, BRICS_bonds)
+        adjacency[i].append(j)
+        adjacency[j].append(i)
+    components = []
+    visited = set()
+    for atom in rdmol.GetAtoms():
+        if atom.GetIdx() in visited:
+            continue
+        component = []
+        stack = [atom.GetIdx()]
+        while stack:
+            idx = stack.pop()
+            if idx in visited:
+                continue
+            visited.add(idx)
+            component.append(idx)
+            stack.extend(adjacency[idx])
+        components.append(sorted(component))
+    return components
 
 
 def BRICS_fragment_indices(rdmol: Chem.Mol) -> list[list[int]]:
@@ -536,20 +554,14 @@ def BRICS_fragment_indices(rdmol: Chem.Mol) -> list[list[int]]:
     Returns:
         list[list[int]]: fragment/scaffold atom indices.
     """
-    BRICS_bonds = [sorted(x[0]) for x in list(BRICS.FindBRICSBonds(rdmol))]
+    BRICS_bonds = [tuple(sorted(x[0])) for x in list(BRICS.FindBRICSBonds(rdmol))]
     if BRICS_bonds:
-        indices = []
-        for bond in BRICS_bonds:
-            for start_idx, end_idx in [(bond[0], bond[1]), (bond[1], bond[0])]:
-                group = []
-                origin_atom = rdmol.GetAtomWithIdx(start_idx)
-                for atom in origin_atom.GetNeighbors():
-                    idx = atom.GetIdx()
-                    if idx == end_idx:
-                        continue
-                    depth_first_search(atom, origin_atom, end_idx, group, BRICS_bonds)
-                if sorted(group) not in indices:
-                    indices.append(sorted(group))
+        # every atom belongs to exactly one fragment, including the cut-bond atoms
+        indices = [
+            component
+            for component in connected_components(rdmol, BRICS_bonds)
+            if component
+        ]
     else:  # all indices
         indices = [[a.GetIdx() for a in rdmol.GetAtoms()]]
     return sorted(indices, key=lambda x: len(x), reverse=True)
@@ -565,26 +577,19 @@ def rigid_fragment_indices(rdmol: Chem.Mol) -> list[list[int]]:
     """
     rotatable_bond_pattern = Chem.MolFromSmarts("[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]")
     rotatable_bonds = [
-        sorted(x) for x in list(rdmol.GetSubstructMatches(rotatable_bond_pattern))
+        tuple(sorted(x))
+        for x in list(rdmol.GetSubstructMatches(rotatable_bond_pattern))
     ]
     connecting_atom_indices = [b[0] for b in rotatable_bonds] + [
         b[1] for b in rotatable_bonds
     ]
     if rotatable_bonds:
-        indices = []
-        for bond in rotatable_bonds:
-            for start_idx, end_idx in [(bond[0], bond[1]), (bond[1], bond[0])]:
-                group = []
-                origin_atom = rdmol.GetAtomWithIdx(start_idx)
-                for atom in origin_atom.GetNeighbors():
-                    idx = atom.GetIdx()
-                    if idx == end_idx:
-                        continue
-                    depth_first_search(
-                        atom, origin_atom, end_idx, group, rotatable_bonds
-                    )
-                if sorted(group) not in indices:
-                    indices.append(sorted(group))
+        # every atom belongs to exactly one fragment, including the cut-bond atoms
+        indices = [
+            component
+            for component in connected_components(rdmol, rotatable_bonds)
+            if component
+        ]
     else:
         # all indices
         indices = [[a.GetIdx() for a in rdmol.GetAtoms()]]
@@ -595,6 +600,7 @@ def rigid_fragment_indices(rdmol: Chem.Mol) -> list[list[int]]:
         indices_noH.append(
             [i for i in ii if rdmol.GetAtomWithIdx(i).GetAtomicNum() != 1]
         )
+    indices_noH = [ii for ii in indices_noH if ii]
 
     # fragment with more connections and more number of atoms will be prioritized
     return sorted(

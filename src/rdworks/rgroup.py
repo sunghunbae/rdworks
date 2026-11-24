@@ -67,6 +67,8 @@ def connect_core_and_chains(combi_smiles: str) -> Mol | None:
     connect = defaultdict(list)
     core_and_chains = Chem.MolFromSmiles(combi_smiles, sanitize=False)
     # default sanitize=True causes WARNING: not removing hydrogen atom with dummy atom neighbors
+    if core_and_chains is None:  # invalid SMILES
+        return None
     for atom in core_and_chains.GetAtoms():
         atom_map_num = atom.GetAtomMapNum()
         if atom_map_num > 0:
@@ -75,6 +77,8 @@ def connect_core_and_chains(combi_smiles: str) -> Mol | None:
     for atom_map_num, atom_list in connect.items():
         if len(atom_list) == 2:
             atm_1, atm_2 = atom_list
+            if not atm_1.GetBonds() or not atm_2.GetBonds():
+                continue  # a bare dummy atom has no neighbor to connect
             nbr_1 = [x.GetOtherAtom(atm_1) for x in atm_1.GetBonds()][0]
             nbr_1.SetAtomMapNum(atom_map_num)
             nbr_2 = [x.GetOtherAtom(atm_2) for x in atm_2.GetBonds()][0]
@@ -154,6 +158,11 @@ def expand_rgroup(
                     connect_core_and_chains, combi_smiles, chunksize=obj.chunksize
                 )
             )
+    # combinations that cannot be connected (e.g., invalid valence) return None
+    n_failed = sum(mol is None for mol in obj.libr)
+    if n_failed:
+        print(f"Expand R-Group: {n_failed} combination(s) could not be connected")
+    obj.libr = [mol for mol in obj.libr if mol is not None]
     return obj.rename(prefix=prefix, start=start)
 
 

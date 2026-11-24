@@ -29,6 +29,7 @@ def get_attachment_orientation(mol: Chem.Mol, dummy_atom_idx: int | None = None)
     """
     # Ensure molecule has 2D coordinates
     if not mol.GetNumConformers():
+        mol = Chem.Mol(mol)  # do not modify the input
         rdDepictor.Compute2DCoords(mol)
 
     conf = mol.GetConformer()
@@ -176,6 +177,7 @@ def calculate_bond_length(mol: Chem.Mol, atom1_idx: int, atom2_idx: int) -> floa
         Bond length in 2D coordinates
     """
     if not mol.GetNumConformers():
+        mol = Chem.Mol(mol)  # do not modify the input
         rdDepictor.Compute2DCoords(mol)
 
     conf = mol.GetConformer()
@@ -197,6 +199,7 @@ def get_average_bond_length(mol: Chem.Mol, bond_type: str = "C-C") -> float:
         Average bond length
     """
     if not mol.GetNumConformers():
+        mol = Chem.Mol(mol)  # do not modify the input
         rdDepictor.Compute2DCoords(mol)
 
     bond_lengths = []
@@ -293,10 +296,13 @@ def standardize_rgroup_scales(
     Returns:
         List of molecules with standardized scales
     """
-    # Ensure all molecules have 2D coordinates
-    for mol in molecules:
+    # Ensure all molecules have 2D coordinates (without modifying the inputs)
+    molecules = list(molecules)
+    for i, mol in enumerate(molecules):
         if not mol.GetNumConformers():
+            mol = Chem.Mol(mol)
             rdDepictor.Compute2DCoords(mol)
+            molecules[i] = mol
 
     # Calculate target bond length if not provided
     if target_bond_length is None:
@@ -406,7 +412,7 @@ class MatchedSeries:
         self.size_min = size_min  # minimum numer of R-groups in a series
         # for consistent drawing
         self.template_pattern = None
-        self.template_coord2D = None
+        self.template_coords2D = None
         self.series = self.libr_to_series()
 
     def __str__(self) -> str:
@@ -425,14 +431,6 @@ class MatchedSeries:
         """
         return iter(self.series)
 
-    def __next__(self) -> Tuple:
-        """Next series.
-
-        Returns:
-            Tuple: (scaffold_SMILES, [(r-group_SMILES, rdworks.Mol, *sort_props_values)
-        """
-        return next(self.series)
-
     def __getitem__(self, index: Union[int, slice]) -> Tuple:
         """Operator `[]`.
 
@@ -446,10 +444,10 @@ class MatchedSeries:
             Tuple: (scaffold_SMILES, [(r-group_SMILES, rdworks.Mol, *sort_props_values)
         """
         if self.count() == 0:
-            raise ValueError(f"MatchedSeries is empty")
+            raise ValueError("MatchedSeries is empty")
         try:
             return self.series[index]
-        except:
+        except IndexError:
             raise ValueError(f"index should be 0..{self.count() - 1}")
 
     def count(self) -> int:
@@ -505,12 +503,14 @@ class MatchedSeries:
                 for p in self.sort_props:
                     try:
                         v = mol.props[p]
-                    except:
+                    except KeyError:
                         if p in rd_descriptor_f:
                             v = rd_descriptor_f[p](mol.rdmol)  # calc. on the fly
                             mol.props.update({p: v})
                         else:
-                            v = None
+                            raise ValueError(
+                                f"unknown sort prop {p!r}; it is neither in Mol.props nor an rdworks descriptor"
+                            )
                     values.append(v)
                 r_group.append(
                     (r_smi, mol, *values)
@@ -530,6 +530,9 @@ class MatchedSeries:
         """
 
         self.template_pattern = Chem.MolFromSmarts(SMARTS)
+        if not rdmol.GetNumConformers():
+            rdmol = Chem.Mol(rdmol)  # do not modify the input
+            rdDepictor.Compute2DCoords(rdmol)
         matched = rdmol.GetSubstructMatch(self.template_pattern)
         coords = [rdmol.GetConformer().GetAtomPosition(x) for x in matched]
         self.template_coords2D = [Geometry.Point2D(pt.x, pt.y) for pt in coords]

@@ -2,7 +2,6 @@ import math
 import itertools
 import logging
 import importlib.resources
-import itertools
 
 import numpy as np
 import pandas as pd
@@ -65,8 +64,8 @@ UnreasonablePatterns = list(
 )
 
 
-def beta_constant(T: float = 278.15) -> float:
-    """Returns the beta constant in Kcal/mol unit at a given temperature (Kelvin).
+def beta_constant(T: float = 298.15) -> float:
+    """Returns the beta constant in (kcal/mol)^-1 at a given temperature (Kelvin).
 
     The constant \\( \\beta \\) is defined as:
 
@@ -78,14 +77,25 @@ def beta_constant(T: float = 278.15) -> float:
     where \\( k_{B} \\) is the Boltzmann constant and
     T is the absolute temperature of the system in Kelvin.
 
-    \\( k_{B} \\) = 1.987204259e-3 Kcal/(mol K)
+    \\( k_{B} \\) = 1.987204259e-3 kcal/(mol K)
 
-    For example, \\( \\beta \\) = 0.5527408646408499 Kcal/(mol K) at 278.15 K
+    For example, \\( \\beta \\) = 1.6878 (kcal/mol)^-1 at 298.15 K
+    (i.e. \\( k_{B} T \\) = 0.5925 kcal/mol).
 
     Args:
-        T (float) : temperature in Kelvin unit.
+        T (float) : temperature in Kelvin unit. Defaults to 298.15.
     """
-    return 1.987204259e-3 * T
+    return 1.0 / (1.987204259e-3 * T)
+
+
+def _as_energy_array(energies: list[float] | np.ndarray) -> np.ndarray:
+    """Returns energies as a non-empty 1D float array."""
+    if not isinstance(energies, (list, tuple, np.ndarray)):
+        raise TypeError(f"expects a list or numpy array of energies, got {type(energies).__name__}")
+    energies = np.asarray(energies, dtype=float)
+    if energies.ndim != 1 or energies.size == 0:
+        raise ValueError("expects a non-empty 1D list or array of energies")
+    return energies
 
 
 def Boltzmann_weights(
@@ -107,16 +117,11 @@ def Boltzmann_weights(
         energies (list[float] | np.ndarray) : energies
         beta (float) : \\( \\beta = \\frac{1}{ k_{B} T } \\) (Kcal/mol)
 
-    Returns:s
+    Returns:
         np.ndarray
 
     """
-    if isinstance(energies, list) and isinstance(energies[0], float):
-        energies = np.array(energies)
-    elif isinstance(energies, np.ndarray):
-        pass
-    else:
-        raise TypeError
+    energies = _as_energy_array(energies)
     relative_energies = energies - np.min(energies)
     boltzmann_factors = np.exp(-beta * relative_energies)
     # Partition function, Z
@@ -140,12 +145,7 @@ def Boltzmann_weighted_average(
     Returns:
         float
     """
-    if isinstance(energies, list) and isinstance(energies[0], float):
-        energies = np.array(energies)
-    elif isinstance(energies, np.ndarray):
-        pass
-    else:
-        raise TypeError
+    energies = _as_energy_array(energies)
     relative_energies = energies - np.min(energies)
     boltzmann_factors = np.exp(-beta * relative_energies)
     Z = np.sum(boltzmann_factors)
@@ -168,8 +168,12 @@ class InflectionDetector:
         y : array-like
             Dependent variable (e.g., protonation)
         """
-        self.x = np.array(x)
-        self.y = np.array(y)
+        self.x = np.array(x, dtype=float)
+        self.y = np.array(y, dtype=float)
+        if len(self.x) < 5 or len(self.x) != len(self.y):
+            raise ValueError(
+                "InflectionDetector() needs x and y of the same length with at least 5 points"
+            )
 
         # Sort by x to ensure monotonic increase
         sort_idx = np.argsort(self.x)
@@ -486,6 +490,51 @@ class IonizableSite:
     acid_base: str
 
 
+def _skeleton(rdmol: Chem.Mol) -> Chem.Mol:
+    """Heavy-atom graph with single bonds and no charges, for matching protomers/tautomers."""
+    skeleton = Chem.RWMol(Chem.RemoveHs(rdmol))
+    for atom in skeleton.GetAtoms():
+        atom.SetFormalCharge(0)
+        atom.SetIsAromatic(False)
+        atom.SetNoImplicit(True)
+        atom.SetNumExplicitHs(0)
+    for bond in skeleton.GetBonds():
+        bond.SetBondType(Chem.BondType.SINGLE)
+        bond.SetIsAromatic(False)
+    skeleton.UpdatePropertyCache(strict=False)
+    return skeleton
+
+
+def atom_index_map(ref: Chem.Mol, other: Chem.Mol) -> dict[int, int]:
+    """Maps atom indices of `ref` to those of `other`, a protomer or tautomer of `ref`.
+
+    States made by (de)protonation or tautomerization share the heavy-atom graph but
+    are rebuilt from canonical SMILES, so the same atom can have different indices.
+
+    Args:
+        ref (Chem.Mol): reference molecule.
+        other (Chem.Mol): molecule to map.
+
+    Returns:
+        dict[int, int]: {ref atom index: other atom index}
+    """
+    ref_skeleton, other_skeleton = _skeleton(ref), _skeleton(other)
+    match = other_skeleton.GetSubstructMatch(ref_skeleton, useChirality=False)
+    if len(match) == ref_skeleton.GetNumAtoms():
+        return {ref_idx: other_idx for ref_idx, other_idx in enumerate(match)}
+    # fall back to the maximum common substructure for different heavy-atom graphs
+    mcs = Chem.rdFMCS.FindMCS(
+        [ref, other],
+        atomCompare=Chem.rdFMCS.AtomCompare.CompareAny,
+        bondCompare=Chem.rdFMCS.BondCompare.CompareAny,
+        completeRingsOnly=True,
+    )
+    mcs_rdmol = Chem.MolFromSmarts(mcs.smartsString)
+    match_ref = ref.GetSubstructMatch(mcs_rdmol)
+    match_other = other.GetSubstructMatch(mcs_rdmol)
+    return dict(zip(match_ref, match_other))
+
+
 class State:
     def __init__(
         self,
@@ -532,6 +581,8 @@ class State:
         self.rdmolH: Chem.Mol = None
         self.sites: list = []
         self.charge: int | None = None
+        # canonical SMILES: identity of the state, independent of the atom order of `smiles`
+        self.key: str | None = None
         self.energy: float | None = None  # Gibbs free energy (dG)
         self.ref_ph: float | None = None  # reference pH for dG; dG is pH-dependent
         self.update()
@@ -547,9 +598,14 @@ class State:
     def __eq__(self, other: object) -> bool:
         """Operator `==`."""
         if isinstance(other, State):
-            return self.smiles == other.smiles
+            # same molecule, even if the SMILES strings (atom orders) differ
+            return self.key == other.key
 
         return False
+
+    def __hash__(self) -> int:
+        """Consistent with `__eq__` (SMILES), so states can be used in sets and as dict keys."""
+        return hash(self.key)
 
     def copy(self) -> Self:
         return copy.deepcopy(self)
@@ -560,6 +616,7 @@ class State:
             self.rdmolH = Chem.AddHs(self.rdmol)
             self.find_ionizable_sites()
             self.charge = Chem.GetFormalCharge(self.rdmol)
+            self.key = Chem.MolToSmiles(self.rdmol)
 
     def info(self, index: int | None = None) -> None:
         if isinstance(index, int):
@@ -642,6 +699,8 @@ class State:
         return False
 
     def find_ionizable_sites(self) -> None:
+        # start over: update() and deserialize() call this again on the same state
+        self.sites = []
         if self.protomer_rule == "simple":
             template = AcidBasePatternsSimple
         elif self.protomer_rule == "default":
@@ -692,8 +751,7 @@ class State:
                 atom_X = atom.GetNeighbors()[0]  # only one
                 charge = atom_X.GetFormalCharge() - 1
                 atom_X.SetFormalCharge(charge)  # <-- change formal charge
-                rwmol.RemoveAtom(idx)  # remove the H atom
-                rwmol.RemoveBond(idx, atom_X.GetIdx())  # remove the bond
+                rwmol.RemoveAtom(idx)  # remove the H atom (and its bond)
                 ionized = rwmol.GetMol()
             else:
                 charge = atom.GetFormalCharge() - 1
@@ -739,7 +797,7 @@ class State:
         """
         states = []
 
-        if self.charge == self.max_formal_charge:
+        if self.charge >= self.max_formal_charge:
             return states
 
         if isinstance(atom_idx, int):
@@ -785,7 +843,7 @@ class State:
         """
         states = []
 
-        if self.charge == self.min_formal_charge:
+        if self.charge <= self.min_formal_charge:
             return states
 
         if isinstance(atom_idx, int):
@@ -826,19 +884,31 @@ class State:
         else:
             return []
 
+        canonical_self = self.key
         states = []
         for smiles in t.enumerated:
-            try:
-                assert smiles != self.smiles
-                rdmol = Chem.MolFromSmiles(smiles)
-                assert rdmol is not None
-                charge = Chem.GetFormalCharge(rdmol)
-                assert charge == self.charge
-                states.append(
-                    State(smiles=smiles, origin=self.smiles, transformation="Tautomer")
-                )
-            except:
+            rdmol = Chem.MolFromSmiles(smiles)
+            if rdmol is None:
                 continue
+            # skip the input itself (compared canonically) and charge-changing tautomers
+            if Chem.MolToSmiles(rdmol) == canonical_self:
+                continue
+            if Chem.GetFormalCharge(rdmol) != self.charge:
+                continue
+            # tautomers inherit the charge limits and rules of this state
+            states.append(
+                State(
+                    smiles=smiles,
+                    origin=self.smiles,
+                    transformation="Tautomer",
+                    min_formal_charge=self.min_formal_charge,
+                    max_formal_charge=self.max_formal_charge,
+                    min_atomic_charge=self.min_atomic_charge,
+                    max_atomic_charge=self.max_atomic_charge,
+                    protomer_rule=self.protomer_rule,
+                    tautomer_rule=self.tautomer_rule,
+                )
+            )
 
         return states
 
@@ -908,8 +978,8 @@ class StateEnsemble:
     def __eq__(self, other: object) -> bool:
         """Operator `==`."""
         if isinstance(other, StateEnsemble):
-            return set([st.smiles for st in self.states]) == set(
-                [st.smiles for st in other.states]
+            return set([st.key for st in self.states]) == set(
+                [st.key for st in other.states]
             )
 
         return False
@@ -962,7 +1032,7 @@ class StateEnsemble:
             if state.rdmol is None:
                 mask.append(False)
                 continue
-            if state.smiles in U:
+            if state.key in U:
                 mask.append(False)
                 continue
             reasonable = True
@@ -974,7 +1044,7 @@ class StateEnsemble:
                 mask.append(False)
                 continue
             mask.append(True)
-            U.append(state.smiles)
+            U.append(state.key)
         self.states = list(itertools.compress(self.states, mask))
 
         return self
@@ -1065,20 +1135,35 @@ class StateEnsemble:
     def get_charge_groups_per_site(self) -> dict[int, dict[int, list[int]]]:
         """Get charge groups per atom site
 
+        Atom indices refer to the first state (the initial state of a StateNetwork).
+        Each state is mapped onto it because states rebuilt from canonical SMILES
+        number the same atoms differently.
+
         Returns:
             dict: {atom_idx: {atom_charge: [state_idx, ...], ...}}
         """
         charge_groups_per_site = {}
-        # collect all ionizable sites (atom index)
+        if not self.states:
+            return charge_groups_per_site
+
+        ref = self.states[0].rdmol
+        # {ref atom index: state atom index} for each state
+        index_maps = [atom_index_map(ref, st.rdmol) for st in self.states]
+
+        # collect all ionizable sites (reference atom index)
         sites_collective = set()
-        for st in self.states:
+        for st, ref_to_st in zip(self.states, index_maps):
+            st_to_ref = {v: k for k, v in ref_to_st.items()}
             for atom_symbol, atom_idx, atom_charge, pr, de in st.site_info():
                 # ex. [('N', 5, 0, True, True), ...]
-                sites_collective.add(atom_idx)
+                if atom_idx in st_to_ref:
+                    sites_collective.add(st_to_ref[atom_idx])
 
-        for st_idx, st in enumerate(self.states):
+        for st_idx, (st, ref_to_st) in enumerate(zip(self.states, index_maps)):
             for atom_idx in sites_collective:
-                atom = st.rdmol.GetAtomWithIdx(atom_idx)
+                if atom_idx not in ref_to_st:
+                    continue
+                atom = st.rdmol.GetAtomWithIdx(ref_to_st[atom_idx])
                 atom_charge = atom.GetFormalCharge()
                 if atom_idx in charge_groups_per_site:
                     if atom_charge in charge_groups_per_site[atom_idx]:
@@ -1297,7 +1382,7 @@ class StateEnsemble:
         )
         inflection_points = [(float(r["x"]), float(r["y"])) for r in results]
         # convert numpy array to list of floats
-        plot_data = {"pH": ph_values.tolist(), "charge": charge.tolist()}
+        plot_data = {"pH": np.asarray(ph_values, dtype=float).tolist(), "charge": charge.tolist()}
 
         return (plot_data, inflection_points)
 
@@ -1382,7 +1467,7 @@ class StateNetwork:
         queue = deque([self.initial_state])
         self.visited_states.append(self.initial_state)
         self.graph.add_node(
-            self.initial_state.smiles,
+            self.initial_state.key,  # graph nodes are canonical SMILES (State.key)
             initial=True,
             sites=self.initial_state.site_info(),
         )
@@ -1399,8 +1484,8 @@ class StateNetwork:
                 ):
                     continue
                 self.graph.add_edge(
-                    current_state.smiles,
-                    neighbor_state.smiles,
+                    current_state.key,
+                    neighbor_state.key,
                     transformation=neighbor_state.transformation,
                 )
                 if neighbor_state not in self.visited_states:
@@ -1411,7 +1496,7 @@ class StateNetwork:
                         for (a, i, q, pr, de) in neighbor_state.site_info()
                     ]
                     self.graph.add_node(
-                        neighbor_state.smiles, initial=False, sites=sites
+                        neighbor_state.key, initial=False, sites=sites
                     )
                     queue.append(neighbor_state)
             if verbose:
@@ -1457,7 +1542,7 @@ class StateNetwork:
         retain_mask = [False if max(ph_p) < threshold else True for ph_p in p]
         remove_mask = [not b for b in retain_mask]
         nodes_to_remove = list(
-            itertools.compress([st.smiles for st in self.visited_states], remove_mask)
+            itertools.compress([st.key for st in self.visited_states], remove_mask)
         )
 
         self.graph.remove_nodes_from(nodes_to_remove)
@@ -1508,26 +1593,16 @@ class StateNetwork:
         return len(self.graph.edges())
 
     def _mcs_index_map(self, other: State) -> dict[int, int]:
-        """Mapping atom indices using the maximum common structure (MCS).
-
-        Uses the self.initial_state as reference in mapping `other` State.
+        """Maps atom indices of `other` onto the initial state (see `atom_index_map()`).
 
         Args:
             other (State): to be mapped state.
 
         Returns:
-            dict: {ref atom index: other atom index, ...}
+            dict: {other atom index: initial state atom index, ...}
         """
-        mcs = Chem.rdFMCS.FindMCS(
-            [self.initial_state.rdmol, other.rdmol],
-            atomCompare=Chem.rdFMCS.AtomCompare.CompareAny,
-            bondCompare=Chem.rdFMCS.BondCompare.CompareAny,
-            completeRingsOnly=True,
-        )
-        mcs_rdmol = Chem.MolFromSmarts(mcs.smartsString)
-        match_1 = self.initial_state.rdmol.GetSubstructMatch(mcs_rdmol)
-        match_2 = other.rdmol.GetSubstructMatch(mcs_rdmol)
-        return {match_2[i]: match_1[i] for i in range(len(match_1))}
+        ref_to_other = atom_index_map(self.initial_state.rdmol, other.rdmol)
+        return {o: r for r, o in ref_to_other.items()}
 
     def get_micro_pKa(
         self, ph_values: np.ndarray, p: np.ndarray
@@ -1666,11 +1741,11 @@ class QupkakeMicrostates:
 
         # enumerate protonation/deprotonation sites to generate microstates
 
-        np = len(self.basic_sites)
+        n_basic = len(self.basic_sites)  # (`np` would shadow numpy)
         nd = len(self.acidic_sites)
         P = [
             c
-            for n in range(np + 1)
+            for n in range(n_basic + 1)
             for c in itertools.combinations(self.basic_sites, n)
         ]
         D = [
@@ -1683,7 +1758,11 @@ class QupkakeMicrostates:
 
         for p, d in PD:
             conf = self.origin.confs[0].copy()
-            conf = conf.protonate(p).deprotonate(d).optimize(calculator=self.calculator)
+            conf = (
+                conf.protonate(list(p))
+                .deprotonate(list(d))
+                .optimize(calculator=self.calculator)
+            )
             charge = len(p) - len(d)
             self.states.append(
                 SimpleNamespace(
@@ -1728,10 +1807,12 @@ class QupkakeMicrostates:
             # mol = mol.drop_confs(k=10, window=15.0, verbose=True)
             PE = []
             for conf in mol.confs:
-                conf = conf.optimize(calculator=self.calculator, verbose=True)
+                # Conf.optimize() sets `E_tot(kcal/mol)` (there is no verbose argument and
+                # no Conf.potential_energy() method)
+                conf = conf.optimize(calculator=self.calculator)
                 # GFN2xTB requires 3D coordinates
                 # xtb = GFN2xTB(conf.rdmol).singlepoint(water='cpcmx', verbose=True)
-                PE.append(conf.potential_energy(calculator=self.calculator))
+                PE.append(conf.props["E_tot(kcal/mol)"])
                 # xtb = GFN2xTB(conf.rdmol).singlepoint(verbose=True)
                 # SimpleNamespace(
                 #             PE = datadict['total energy'] * hartree2kcalpermol,
@@ -1751,14 +1832,15 @@ class QupkakeMicrostates:
         ]
         for microstate in self.states:
             microstate.delta_m = microstate.charge - self.reference.charge
+        # constants must be defined before they are used below
+        kT = 0.001987 * 298.0  # (kcal/mol K), standard condition
+        C = math.log(10) * kT
         dG = []
         for microstate in self.states:
             dG.append((microstate.PE - self.reference.PE) + microstate.delta_m * C * pH)
         dG = np.array(dG)
 
         logger.info(f"dG= {dG}")
-        kT = 0.001987 * 298.0  # (kcal/mol K), standard condition
-        C = math.log(10) * kT
         Boltzmann_factors = np.exp(-dG / kT)
         Z = np.sum(Boltzmann_factors)
         p = Boltzmann_factors / Z

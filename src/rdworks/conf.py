@@ -15,11 +15,11 @@ from rdkit import Chem
 from rdkit.Chem import rdMolTransforms, rdmolops, rdFreeSASA
 from PIL import Image
 
-from rdworks.std import clean_2d
-from rdworks.torsion import get_torsion_angle_atom_indices, create_torsion_fragment
+from rdworks.torsion import get_torsion_angle_atom_indices
 from rdworks.xtb.wrapper import GFN2xTB
 from rdworks.view import render_png, render_svg
 
+import rdworks.torsion
 import rdworks.units
 import rdworks.utils
 
@@ -582,7 +582,7 @@ class Conf:
     def calculate_torsion_energies_one(
         self,
         calculator: str | Callable,
-        indices: tuple[int],
+        indices: tuple[int, ...],
         simplify: bool = True,
         fmax: float = 0.05,
         interval: float = 20.0,
@@ -593,7 +593,7 @@ class Conf:
 
         Args:
             calculator (str | Callable): 'MMFF', 'UFF', 'xTB' or ASE calculator.
-            indices (tuple[int]): atom indices (i,j,k,l) for a torsion angle
+            indices (tuple[int, ...]): atom indices (i,j,k,l) for a torsion angle
             simplify (bool, optional): whether to use fragementation. Defaults to True.
             fmax (float, optional): convergence limit for optimize. Defaults to 0.05.
             interval (float, optional): angle intervals. Defaults to 20.0.
@@ -608,181 +608,16 @@ class Conf:
         Returns:
             Self: modified self.
         """
-        ref_conf = self.copy()
-
-        data = {
-            "indices": indices,
-            "angle": [],
-            "init": [],
-            "last": [],
-            "Converged": [],
-        }
-
-        if simplify:
-            (frag, frag_ijkl, frag_created, wbo_filtered) = create_torsion_fragment(
-                ref_conf.rdmol, indices
-            )
-            frag_conf = Conf(frag)
-            for angle in np.arange(-180.0, 180.0, interval):
-                # Iterated numpy.ndarray does not contain the last 180: -180., ..., (180).
-                conf = frag_conf.copy()
-                conf.set_torsion_angle(*frag_ijkl, angle)  # atoms bonded to `l` move.
-                conf = conf.optimize(calculator, fmax=fmax, water=water)
-                data["angle"].append(angle)
-                # conf.optimize() updates coordinates and conf.props:
-                #   `E_tot_init(kcal/mol)`, `E_tot(kcal/mol)`, `Converged`.
-                data["init"].append(conf.props["E_tot_init(kcal/mol)"])
-                data["last"].append(conf.props["E_tot(kcal/mol)"])
-                data["Converged"].append(conf.props["Converged"])
-                frag_cleaned, _ = clean_2d(frag, reset_isotope=True, remove_H=True)
-                # to serialize the molecule
-                data["frag"] = Chem.MolToMolBlock(frag_cleaned)
-                data["frag_indices"] = frag_ijkl
-        else:
-            for angle in np.arange(-180.0, 180.0, interval):
-                # Iterated numpy.ndarray does not contain the last 180: -180., ..., (180).
-                conf = ref_conf.copy()
-                conf.set_torsion_angle(*indices, angle)  # atoms bonded to `l` move.
-                conf = conf.optimize(calculator, fmax=fmax, water=water)
-                data["angle"].append(angle)
-                # conf.optimize() updates coordinates and conf.props:
-                #   `E_tot_init(kcal/mol)`, `E_tot(kcal/mol)`, `Converged`.
-                data["init"].append(conf.props["E_tot_init(kcal/mol)"])
-                data["last"].append(conf.props["E_tot(kcal/mol)"])
-                data["Converged"].append(conf.props["Converged"])
-
-        # Post-processing
-        if use_converged_only:
-            data["angle"] = list(itertools.compress(data["angle"], data["Converged"]))
-            data["init"] = list(itertools.compress(data["init"], data["Converged"]))
-            data["last"] = list(itertools.compress(data["last"], data["Converged"]))
-
-        relax = np.array(data["init"]) - np.median(data["last"])
-        E_rel = relax - np.min(relax)
-
-        torsion_energy_profile = {
-            "indices": data["indices"],
-            "angle": np.round(
-                np.array(data["angle"]), 1
-            ).tolist(),  # np.ndarray -> list for serialization
-            "E_rel(kcal/mol)": np.round(
-                E_rel, 2
-            ).tolist(),  # np.ndarray -> list for serialization
-        }
-
-        if simplify:
-            torsion_energy_profile.update(
-                {
-                    "frag": data.get("frag", None),
-                    "frag_indices": data.get("frag_indices", None),
-                }
-            )
-
-        self.props["torsion"] = torsion_energy_profile
-
-        return self
-
-    def __calculate_torsion_energies_batch(
-        self,
-        batchoptimizer: Callable,
-        indices: tuple,
-        simplify: bool = True,
-        fmax: float = 0.05,
-        interval: float = 20.0,
-        use_converged_only: bool = True,
-        batchsize_atoms: int = 16 * 1024,
-    ) -> Self:
-        """Calculate potential energy profile for torsion angles in a batch.
-
-        Args:
-            batchoptimizer (Callable): BatchOptimizer.
-            indices (tuple): atom indices (i,j,k,l) for a torsion angle
-            simplify (bool, optional): whether to use fragementation. Defaults to True.
-            fmax (float, optional): convergence limit for optimize. Defaults to 0.05.
-            interval (float, optional): angle intervals. Defaults to 20.0.
-            use_converged_only (bool, optional): whether to use only converged data. Defaults to True.
-
-        Returns:
-            Self: modified self.
-        """
-        ref_conf = self.copy()
-
-        data = {
-            "indices": indices,
-            "angle": [],
-            "init": [],
-            "last": [],
-            "Converged": [],
-        }
-
-        confs = []
-        if simplify:
-            (frag, frag_ijkl, frag_created, wbo_filtered) = create_torsion_fragment(
-                ref_conf.rdmol, indices
-            )
-            frag_conf = Conf(frag)
-            for angle in np.arange(-180.0, 180.0, interval):
-                # Iterated numpy.ndarray does not contain the last 180: -180., ..., (180).
-                conf = frag_conf.copy()
-                conf.set_torsion_angle(*frag_ijkl, angle)  # atoms bonded to `l` move.
-                frag_cleaned, _ = clean_2d(frag, reset_isotope=True, remove_H=True)
-                # to serialize the molecule
-                data["frag"] = Chem.MolToMolBlock(frag_cleaned)
-                data["frag_indices"] = frag_ijkl
-                data["angle"].append(angle)
-                confs.append(conf)
-
-        else:
-            for angle in np.arange(-180.0, 180.0, interval):
-                # Iterated numpy.ndarray does not contain the last 180: -180., ..., (180).
-                conf = ref_conf.copy()
-                conf.set_torsion_angle(*indices, angle)  # atoms bonded to `l` move.
-                data["angle"].append(angle)
-                confs.append(conf)
-
-        batches = prepare_batches(confs, batchsize_atoms)
-
-        for batch in batches:
-            optimized = batchoptimizer(batch.rdmols).run()
-            for rdmol in optimized.mols:
-                # conf.optimize() updates coordinates and conf.props:
-                #   `E_tot_init(kcal/mol)`, `E_tot(kcal/mol)`, `Converged`.
-                data["init"].append(float(rdmol.GetProp("E_tot_init(kcal/mol)")))
-                data["last"].append(float(rdmol.GetProp("E_tot(kcal/mol)")))
-                data["Converged"].append(
-                    True if rdmol.GetProp("Converged") == "True" else False
-                )
-
-        # Post-processing
-        if use_converged_only:
-            data["angle"] = list(itertools.compress(data["angle"], data["Converged"]))
-            data["init"] = list(itertools.compress(data["init"], data["Converged"]))
-            data["last"] = list(itertools.compress(data["last"], data["Converged"]))
-
-        relax = np.array(data["init"]) - np.median(data["last"])
-        E_rel = relax - np.min(relax)
-
-        torsion_energy_profile = {
-            "indices": data["indices"],
-            "angle": np.round(
-                np.array(data["angle"]), 1
-            ).tolist(),  # np.ndarray -> list for serialization
-            "E_rel(kcal/mol)": np.round(
-                E_rel, 2
-            ).tolist(),  # np.ndarray -> list for serialization
-        }
-
-        if simplify:
-            torsion_energy_profile.update(
-                {
-                    "frag": data.get("frag", None),
-                    "frag_indices": data.get("frag_indices", None),
-                }
-            )
-
-        self.props["torsion"] = torsion_energy_profile
-
-        return self
+        return rdworks.torsion.calculate_torsion_energies_one(
+            self,
+            calculator,
+            indices,
+            simplify=simplify,
+            fmax=fmax,
+            interval=interval,
+            use_converged_only=use_converged_only,
+            water=water,
+        )
 
     def calculate_torsion_energies(
         self,
@@ -818,249 +653,17 @@ class Conf:
             Self: modified self.
         """
 
-        torsion_angle_atom_indices_list = self.get_torsion_angle_atoms()
-        # [(5, 4, 3, 1), ...]
-
-        if isinstance(torsion_angle_idx, int) and torsion_angle_idx < len(
-            torsion_angle_atom_indices_list
-        ):
-            indices = {
-                torsion_angle_idx: torsion_angle_atom_indices_list[torsion_angle_idx]
-            }
-            # atom indices for a single torsion angle
-            # ex. {0: (5,4,3,1)}
-        else:
-            indices = {k: v for k, v in enumerate(torsion_angle_atom_indices_list)}
-            # atom indices for all torsion angles
-            # ex. {0: (5,4,3,1), 1: ...}
-
-        conf = self.copy()
-        torsion_energies = []
-        if batchsize_atoms >= conf.natoms:
-            for torsion_angle_idx, ijkl in indices.items():
-                conf = conf.__calculate_torsion_energies_batch(
-                    calculator,
-                    ijkl,
-                    simplify,
-                    fmax,
-                    interval,
-                    use_converged_only,
-                    batchsize_atoms=batchsize_atoms,
-                )
-                conf.props["torsion"].update({"torsion_angle_idx": torsion_angle_idx})
-                torsion_energies.append(conf.props["torsion"])
-        else:
-            for torsion_angle_idx, ijkl in indices.items():
-                conf = conf.calculate_torsion_energies_one(
-                    calculator,
-                    ijkl,
-                    simplify,
-                    fmax,
-                    interval,
-                    use_converged_only,
-                    water=water,
-                )
-                conf.props["torsion"].update({"torsion_angle_idx": torsion_angle_idx})
-                torsion_energies.append(conf.props["torsion"])
-
-        self.props["torsion"] = torsion_energies
-
-        return self
-
-    def __sp_torsion_energies(
-        self,
-        calculator: str | Callable,
-        indices: tuple[int],
-        simplify: bool = True,
-        interval: float = 20.0,
-        water: str | None = None,
-    ) -> Self:
-        """Single-Point based potential energy profile for one torsion angle.
-
-        Args:
-            calculator (str | Callable): 'MMFF', 'UFF', 'xTB' or ASE calculator.
-            indices (tuple[int]): atom indices (i,j,k,l) for a torsion angle
-            simplify (bool, optional): whether to use fragementation. Defaults to True.
-            interval (float, optional): angle intervals. Defaults to 20.0.
-
-        Args for xTB calculator:
-            water (str, optional): water solvation model (choose 'gbsa', 'alpb', 'cpcmx')
-                alpb: ALPB solvation model (Analytical Linearized Poisson-Boltzmann).
-                gbsa: generalized Born (GB) model with Surface Area contributions.
-                cpcmx: Extended Conductor-like Polarizable Continuum Solvation Model (CPCM-X).
-                Defaults to None.
-
-        Returns:
-            Self: modified self.
-        """
-        ref_conf = self.copy()  # optimized reference conformer
-        ref_conf = ref_conf.singlepoint(calculator, water=water)
-
-        data = {
-            "indices": indices,
-            "angle": [],
-            "init": [],
-            "last": [],
-            "Converged": [],
-        }
-
-        if simplify:
-            (frag, frag_ijkl, frag_created, wbo_filtered) = create_torsion_fragment(
-                ref_conf.rdmol, indices
-            )
-            frag_conf = Conf(frag)
-            for angle in np.arange(-180.0, 180.0, interval):
-                # Iterated numpy.ndarray does not contain the last 180: -180., ..., (180).
-                conf = frag_conf.copy()
-                conf.set_torsion_angle(*frag_ijkl, angle)  # atoms bonded to `l` move.
-                conf = conf.singlepoint(calculator, water=water)
-                data["angle"].append(angle)
-                # conf.singlepoint() sets `E_tot(kcal/mol)`
-                # conf.optimize() updates coordinates and conf.props:
-                #   `E_tot_init(kcal/mol)`, `E_tot(kcal/mol)`, `Converged`.
-                data["init"].append(conf.props["E_tot(kcal/mol)"])
-                data["last"].append(ref_conf.props["E_tot(kcal/mol)"])
-                frag_cleaned, _ = clean_2d(frag, reset_isotope=True, remove_H=True)
-                # to serialize the molecule
-                data["frag"] = Chem.MolToMolBlock(frag_cleaned)
-                data["frag_indices"] = frag_ijkl
-        else:
-            for angle in np.arange(-180.0, 180.0, interval):
-                # Iterated numpy.ndarray does not contain the last 180: -180., ..., (180).
-                conf = ref_conf.copy()
-                conf.set_torsion_angle(*indices, angle)  # atoms bonded to `l` move.
-                conf = conf.singlepoint(calculator, water=water)
-                data["angle"].append(angle)
-                # conf.optimize() updates coordinates and conf.props:
-                #   `E_tot_init(kcal/mol)`, `E_tot(kcal/mol)`, `Converged`.
-                data["init"].append(conf.props["E_tot(kcal/mol)"])
-                data["last"].append(ref_conf.props["E_tot(kcal/mol)"])
-
-        relax = np.array(data["init"]) - np.median(data["last"])
-        E_rel = relax - np.min(relax)
-
-        torsion_energy_profile = {
-            "indices": data["indices"],
-            "angle": np.round(
-                np.array(data["angle"]), 1
-            ).tolist(),  # np.ndarray -> list for serialization
-            "E_rel(kcal/mol)": np.round(
-                E_rel, 2
-            ).tolist(),  # np.ndarray -> list for serialization
-        }
-
-        if simplify:
-            torsion_energy_profile.update(
-                {
-                    "frag": data.get("frag", None),
-                    "frag_indices": data.get("frag_indices", None),
-                }
-            )
-
-        self.props["torsion"] = torsion_energy_profile
-
-        return self
-
-    def __sp_torsion_energies_batch(
-        self,
-        batch_calculator: Callable,
-        indices: tuple,
-        simplify: bool = True,
-        interval: float = 20.0,
-        water: str | None = None,
-        batchsize_atoms: int = 16 * 1024,
-    ) -> Self:
-        """Calculate Single-Point potential energy profile for torsion angles in a batch.
-
-        Args:
-            calculator (Callable): BatchSinglePoint calculator.
-            indices (tuple): atom indices (i,j,k,l) for a torsion angle
-            simplify (bool, optional): whether to use fragementation. Defaults to True.
-            interval (float, optional): angle intervals. Defaults to 20.0.
-
-        Args for xTB calculator:
-            water (str, optional): water solvation model (choose 'gbsa', 'alpb', 'cpcmx')
-                alpb: ALPB solvation model (Analytical Linearized Poisson-Boltzmann).
-                gbsa: generalized Born (GB) model with Surface Area contributions.
-                cpcmx: Extended Conductor-like Polarizable Continuum Solvation Model (CPCM-X).
-                Defaults to None.
-
-        Returns:
-            Self: modified self.
-        """
-        ref_conf = self.copy()  # optimized reference conformer
-        evaluated_batch = batch_calculator([ref_conf.rdmol]).run()
-        for rdmol in evaluated_batch.mols:
-            ref_conf.props["E_tot(kcal/mol)"] = float(rdmol.GetProp("E_tot(kcal/mol)"))
-
-        data = {
-            "indices": indices,
-            "angle": [],
-            "init": [],
-            "last": [],
-            "Converged": [],
-        }
-
-        confs = []
-        if simplify:
-            (frag, frag_ijkl, frag_created, wbo_filtered) = create_torsion_fragment(
-                ref_conf.rdmol, indices
-            )
-            frag_conf = Conf(frag)
-            for angle in np.arange(-180.0, 180.0, interval):
-                # Iterated numpy.ndarray does not contain the last 180: -180., ..., (180).
-                conf = frag_conf.copy()
-                conf.set_torsion_angle(*frag_ijkl, angle)  # atoms bonded to `l` move.
-                frag_cleaned, _ = clean_2d(frag, reset_isotope=True, remove_H=True)
-                # to serialize the molecule
-                data["frag"] = Chem.MolToMolBlock(frag_cleaned)
-                data["frag_indices"] = frag_ijkl
-                data["angle"].append(angle)
-                confs.append(conf)
-
-        else:
-            for angle in np.arange(-180.0, 180.0, interval):
-                # Iterated numpy.ndarray does not contain the last 180: -180., ..., (180).
-                conf = ref_conf.copy()
-                conf.set_torsion_angle(*indices, angle)  # atoms bonded to `l` move.
-                data["angle"].append(angle)
-                confs.append(conf)
-
-        batches = prepare_batches(confs, batchsize_atoms)
-
-        for batch in batches:
-            evaluated_batch = batch_calculator(batch.rdmols).run()
-            for rdmol in evaluated_batch.mols:
-                # batch single point calculator sets 'E_tot(kcal/mol)'
-                # batch optimizer updates coordinates and conf.props:
-                #   `E_tot_init(kcal/mol)`, `E_tot(kcal/mol)`, `Converged`.
-                data["init"].append(float(rdmol.GetProp("E_tot(kcal/mol)")))
-                data["last"].append(ref_conf.props["E_tot(kcal/mol)"])
-
-        relax = np.array(data["init"]) - np.median(data["last"])
-        E_rel = relax - np.min(relax)
-
-        torsion_energy_profile = {
-            "indices": data["indices"],
-            "angle": np.round(
-                np.array(data["angle"]), 1
-            ).tolist(),  # np.ndarray -> list for serialization
-            "E_rel(kcal/mol)": np.round(
-                E_rel, 2
-            ).tolist(),  # np.ndarray -> list for serialization
-        }
-
-        if simplify:
-            torsion_energy_profile.update(
-                {
-                    "frag": data.get("frag", None),
-                    "frag_indices": data.get("frag_indices", None),
-                }
-            )
-
-        self.props["torsion"] = torsion_energy_profile
-
-        return self
+        return rdworks.torsion.calculate_torsion_energies(
+            self,
+            calculator,
+            torsion_angle_idx=torsion_angle_idx,
+            simplify=simplify,
+            fmax=fmax,
+            interval=interval,
+            use_converged_only=use_converged_only,
+            batchsize_atoms=batchsize_atoms,
+            water=water,
+        )
 
     def calculate_sp_torsion_energies(
         self,
@@ -1095,47 +698,15 @@ class Conf:
             Self: modified self.
         """
 
-        torsion_angle_atom_indices_list = self.get_torsion_angle_atoms()
-        # [(5, 4, 3, 1), ...]
-
-        if isinstance(torsion_angle_idx, int) and torsion_angle_idx < len(
-            torsion_angle_atom_indices_list
-        ):
-            indices = {
-                torsion_angle_idx: torsion_angle_atom_indices_list[torsion_angle_idx]
-            }
-            # atom indices for a single torsion angle
-            # ex. {0: (5,4,3,1)}
-        else:
-            indices = {k: v for k, v in enumerate(torsion_angle_atom_indices_list)}
-            # atom indices for all torsion angles
-            # ex. {0: (5,4,3,1), 1: ...}
-
-        conf = self.copy()
-        torsion_energies = []
-        if batchsize_atoms >= conf.natoms:
-            for torsion_angle_idx, ijkl in indices.items():
-                conf = conf.__sp_torsion_energies_batch(
-                    calculator,
-                    ijkl,
-                    simplify,
-                    interval,
-                    water=water,
-                    batchsize_atoms=batchsize_atoms,
-                )
-                conf.props["torsion"].update({"torsion_angle_idx": torsion_angle_idx})
-                torsion_energies.append(conf.props["torsion"])
-        else:
-            for torsion_angle_idx, ijkl in indices.items():
-                conf = conf.__sp_torsion_energies(
-                    calculator, ijkl, simplify, interval, water
-                )
-                conf.props["torsion"].update({"torsion_angle_idx": torsion_angle_idx})
-                torsion_energies.append(conf.props["torsion"])
-
-        self.props["torsion"] = torsion_energies
-
-        return self
+        return rdworks.torsion.calculate_sp_torsion_energies(
+            self,
+            calculator,
+            torsion_angle_idx=torsion_angle_idx,
+            simplify=simplify,
+            interval=interval,
+            water=water,
+            batchsize_atoms=batchsize_atoms,
+        )
 
     def dumps(self, key: str = "") -> str:
         """Returns JSON dumps of the `props`.

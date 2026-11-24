@@ -23,7 +23,7 @@ from types import SimpleNamespace
 from rdkit import Chem
 
 from rdworks import Mol
-from rdworks.tautomerism import ComprehensiveTautomers, RdkTautomers
+from rdworks.tautomers import ComprehensiveTautomers, RdkTautomers
 
 import rdworks.utils
 

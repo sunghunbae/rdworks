@@ -44,7 +44,8 @@ class Conf:
                 Defaults to False.
 
         Raises:
-            ValueError: if `molecule` is not rdkit.Chem.Mol object.
+            ValueError: if `molecule` is an invalid MolBlock or does not have
+                exactly one conformer.
         """
         assert isinstance(molecule, str | Chem.Mol) or molecule is None
 
@@ -62,11 +63,11 @@ class Conf:
         # 1 unpaired electron  has S = 1/2, 2S + 1 = 2, called a doublet (radical).
         # 2 unpaired electrons has S = 1,   2S + 1 = 3, called a triplet.
         self.smiles = ""
-        self.molblock = ""
         self.symbols = []
         self.numbers = []
-        self.positions = np.array([])  # (natoms, 3)
         self.props = {}
+        # `positions` and `molblock` are properties computed from `rdmol`, so they
+        # always reflect the current coordinates (after optimize, sync, torsion changes)
 
         if molecule is None:
             return
@@ -78,23 +79,30 @@ class Conf:
                 self.rdmol = Chem.MolFromMolBlock(
                     molecule, sanitize=False, removeHs=False, strictParsing=True
                 )
-            except:
-                ValueError(f"Conf() Error: invalid MolBlock string")
+            except Exception:
+                self.rdmol = None
+            if self.rdmol is None:
+                raise ValueError("Conf() Error: invalid MolBlock string")
 
         elif isinstance(molecule, Chem.Mol):  # 3-D
-            try:
-                self.rdmol = molecule
-            except:
-                ValueError(f"Conf() Error: invalid Chem.Mol object")
+            # copy, so later coordinate changes do not modify the caller's molecule
+            self.rdmol = Chem.Mol(molecule)
+
+        if self.rdmol.GetNumConformers() != 1:
+            raise ValueError(
+                "Conf() Error: expects exactly one conformer, "
+                f"got {self.rdmol.GetNumConformers()}"
+            )
+
+        if name:
+            self.rdmol.SetProp("_Name", name)
 
         self._update()
 
     def _update(self) -> None:
         self.smiles = Chem.MolToSmiles(self.rdmol)
-        self.molblock = Chem.MolToMolBlock(self.rdmol)
         self.symbols = [a.GetSymbol() for a in self.rdmol.GetAtoms()]
         self.numbers = [a.GetAtomicNum() for a in self.rdmol.GetAtoms()]
-        self.positions = self.rdmol.GetConformer().GetPositions()  # np.ndarray
         # check hydrogens
         num_atoms = self.rdmol.GetNumAtoms()
         tot_atoms = self.rdmol.GetNumAtoms(onlyExplicit=False)
@@ -116,11 +124,25 @@ class Conf:
         Returns:
             str: string representation.
         """
-        return f"<rdworks.Conf({self.rdmol} name={self.name} atoms={self.natoms})>"
+        return f"<rdworks.Conf({self.smiles} name={self.name} atoms={self.natoms})>"
 
     ##################################################
     ### Properties
     ##################################################
+
+    @property
+    def positions(self) -> np.ndarray:
+        """Returns current atomic coordinates (natoms, 3) in Angstrom."""
+        if self.rdmol is None:
+            return np.array([])
+        return self.rdmol.GetConformer().GetPositions()
+
+    @property
+    def molblock(self) -> str:
+        """Returns the MolBlock of the current coordinates."""
+        if self.rdmol is None:
+            return ""
+        return Chem.MolToMolBlock(self.rdmol)
 
     @property
     def COG(self) -> np.array:
@@ -129,11 +151,7 @@ class Conf:
         Returns:
             np.array: the center of geometry.
         """
-        xyz = []
-        for i in range(0, self.natoms):
-            pos = self.rdmol.GetConformer().GetAtomPositions(i)
-            xyz.append([pos.x, pos.y, pos.z])
-        return np.mean(xyz, axis=0)
+        return np.mean(self.positions, axis=0)
 
     @property
     def Rg(self) -> float:
@@ -142,11 +160,7 @@ class Conf:
         Returns:
             float: the radius of gyration.
         """
-        xyz = []
-        for i in range(0, self.natoms):
-            pos = self.rdmol.GetConformer().GetAtomPositions(i)
-            xyz.append([pos.x, pos.y, pos.z])
-        xyz = np.array(xyz)
+        xyz = self.positions
         cog = np.mean(xyz, axis=0)
         a = xyz - cog
         b = np.einsum("ij,ij->i", a, a)
@@ -349,9 +363,13 @@ class Conf:
     def has_acceptable_bond_lengths(self, tolerance: float = 0.25) -> bool:
         """Check bond length.
 
+        The expected length of each bond is the sum of the covalent radii of the
+        bonded atoms, shortened by 0.18 A per extra bond order (aromatic = 1.5).
+        (Van der Waals radii are non-bonded contact distances, about twice as long.)
+
         Args:
-            tolerance (float, optional): tolerance from the sum of
-                van der Waals radii of bonded atoms. Defaults to 0.25 (A).
+            tolerance (float, optional): allowed deviation from the expected
+                bond length. Defaults to 0.25 (A).
 
         Returns:
             bool: True if all bond lengths are accceptable.
@@ -364,13 +382,15 @@ class Conf:
             idx2 = bond.GetEndAtomIdx()
             nuc1 = self.rdmol.GetAtomWithIdx(idx1).GetAtomicNum()
             nuc2 = self.rdmol.GetAtomWithIdx(idx2).GetAtomicNum()
-            sum_radii = pt.GetRvdw(nuc1) + pt.GetRvdw(nuc2)  # (A)
-            # from mendeleev import element
-            # sum_radii = (element(nuc1).vdw_radius + element(nuc2).vdw_radius) * pm2angstrom
+            expected = (
+                pt.GetRcovalent(nuc1)
+                + pt.GetRcovalent(nuc2)
+                - 0.18 * (bond.GetBondTypeAsDouble() - 1.0)
+            )  # (A)
             bond_length = rdMolTransforms.GetBondLength(
                 self.rdmol.GetConformer(), idx1, idx2
             )
-            if abs(bond_length - sum_radii) > tolerance:
+            if abs(bond_length - expected) > tolerance:
                 return False
 
         return True
@@ -1033,11 +1053,11 @@ def prepare_batches(confs: list[Conf], batchsize_atoms: int = 16384) -> list[Bat
     batch_confs = []
     batch_atoms = 0
     for conf in confs:
-        if (batch_atoms + conf.natoms) > batchsize_atoms:
+        if batch_confs and (batch_atoms + conf.natoms) > batchsize_atoms:
             batches.append(
                 Batch(rdmols=batch_confs, size=len(batch_confs), num_atoms=batch_atoms)
             )
-            # start over a new batch
+            # start over a new batch (a conf larger than batchsize_atoms gets its own)
             batch_confs = [conf.rdmol]
             batch_atoms = conf.natoms
         else:
@@ -1064,17 +1084,16 @@ def batch_singlepoint(
         list[Conf]: list of Conf objects with updated properties.
     """
     batches = prepare_batches(confs, batchsize_atoms=batchsize_atoms)
-    calculated_confs = []
+    results = []
     for batch in batches:
         calculated = batch_calculator(batch.rdmols).run()
-        for rdmol in calculated.mols:
-            conf = Conf(rdmol)
-            conf.props = {
-                "E_tot(kcal/mol)": float(rdmol.GetProp("E_tot(kcal/mol)")),
-            }
-            calculated_confs.append(conf)
+        results.extend(calculated.mols)
 
-    return calculated_confs
+    return _merge_batch_results(
+        confs,
+        results,
+        lambda rdmol: {"E_tot(kcal/mol)": float(rdmol.GetProp("E_tot(kcal/mol)"))},
+    )
 
 
 def batch_optimize(
@@ -1090,16 +1109,44 @@ def batch_optimize(
         list[Conf]: list of optimized Conf objects.
     """
     batches = prepare_batches(confs, batchsize_atoms=batchsize_atoms)
-    optimized_confs = []
+    results = []
     for batch in batches:
         optimized = batch_calculator(batch.rdmols).run()
-        for rdmol in optimized.mols:
-            conf = Conf(rdmol)
-            conf.props = {
-                "E_tot_init(kcal/mol)": float(rdmol.GetProp("E_tot_init(kcal/mol)")),
-                "E_tot(kcal/mol)": float(rdmol.GetProp("E_tot(kcal/mol)")),
-                "Converged": True if rdmol.GetProp("Converged") == "True" else False,
-            }
-            optimized_confs.append(conf)
+        results.extend(optimized.mols)
 
-    return optimized_confs
+    return _merge_batch_results(
+        confs,
+        results,
+        lambda rdmol: {
+            "E_tot_init(kcal/mol)": float(rdmol.GetProp("E_tot_init(kcal/mol)")),
+            "E_tot(kcal/mol)": float(rdmol.GetProp("E_tot(kcal/mol)")),
+            "Converged": rdmol.GetProp("Converged") == "True",
+        },
+    )
+
+
+def _merge_batch_results(
+    confs: list[Conf], rdmols: list[Chem.Mol], get_props: Callable
+) -> list[Conf]:
+    """Builds new Conf objects from batch results, keeping names and existing props.
+
+    Energy-derived props (`E_*`, `Converged`, `cluster*`) of the input conformers are
+    dropped because they no longer describe the new energies/geometries.
+    Batch calculators must return molecules in the same order as the input.
+    """
+    if len(rdmols) != len(confs):
+        raise RuntimeError(
+            f"batch calculator returned {len(rdmols)} molecules for {len(confs)} conformers"
+        )
+    merged = []
+    for conf, rdmol in zip(confs, rdmols):
+        new_conf = Conf(rdmol, name=conf.name)
+        new_conf.spin = conf.spin
+        kept = {
+            k: v
+            for k, v in conf.props.items()
+            if not (k.startswith("E_") or k.startswith("cluster") or k == "Converged")
+        }
+        new_conf.props = {**kept, **new_conf.props, **get_props(rdmol)}
+        merged.append(new_conf)
+    return merged

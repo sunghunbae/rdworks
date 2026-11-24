@@ -27,6 +27,14 @@ m = m.make_confs(n=50, calculator='UFF', seed=42, prune_rms=0.5)
 - fixed `generate_inchi_key()` returning `None` when InChI is unavailable (e.g. dummy atoms); it returns `""` and `Mol` equality falls back to canonical SMILES
 - `standardize()` now raises `ValueError` for invalid SMILES and `TypeError` for unsupported input
 - fixed `SyntaxWarning` (invalid escape sequence) in `xtb/wrapper.py`
+- fixed stale `Conf.positions` and `Conf.molblock` after `optimize()`, `sync()`, or `set_torsion_angle()`, which made ASE calculations, `serialize()` (including `Mol.serialize()`), `to_xyz()`, `to_geometry()`, and `to_turbomole()` use the old geometry; both are now properties computed from the current coordinates
+- fixed `Conf.COG` and `Conf.Rg` always raising `AttributeError`
+- fixed `Conf()` sharing the input `Chem.Mol` (coordinate changes moved the caller's molecule); the input is now copied and `name` is set on it
+- `Conf()` now raises `ValueError` for an invalid MolBlock (previously not raised) and for input without exactly one conformer
+- fixed `Conf.has_acceptable_bond_lengths()` always returning `False` by comparing with bond-order-adjusted covalent radii instead of van der Waals radii
+- fixed `prepare_batches()` creating an empty batch when a conformer exceeds `batchsize_atoms`
+- fixed `batch_singlepoint()` and `batch_optimize()` losing conformer names and props (stale energy and cluster props are dropped); a mismatched result count raises `RuntimeError`
+- changed `str(Conf)` to show the SMILES instead of the object address
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

@@ -40,6 +40,14 @@ m = m.make_confs(n=50, calculator='UFF', seed=42, prune_rms=0.5)
 ```py
 libr = libr.pick_diverse(10, seed=0, fp_type='morgan')
 ```
+- fixed `MolLibr` slicing (`libr[a:b]`) renaming the original library's molecules to `entry.N` and resetting compute settings
+- fixed `MolLibr()` renaming the `rdworks.Mol` objects passed to it; only libraries with no named molecules are named `entry.1`, `entry.2`, ...
+- fixed `MolLibr()` adding `None` for `rdworks.Conf` input and silently duplicating the previous molecule for unsupported input, which now raises `TypeError`
+- fixed `MolLibr ==` returning `True` when one library is a subset of the other
+- fixed `MolLibr` `-`, `-=`, `&`, and `&=` returning molecules in an arbitrary order that varied between Python sessions; results now keep the library order
+- fixed `MolLibr.to_html()` always raising `AttributeError`; it embeds an SVG depiction and the name of each molecule
+- fixed `MolLibr.to_batches()` creating an empty batch when a conformer exceeds `batchsize_atoms`; charges are now taken from each conformer
+- removed broken `MolLibr.__next__` (iterate with `for mol in libr`)
 
 ## 0.73.1 (Nov 25, 2025)
 - created separate `batch.py`

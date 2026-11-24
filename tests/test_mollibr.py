@@ -2,6 +2,7 @@ import copy
 import math
 from importlib.resources import files, as_file
 
+import pytest
 from rdkit import Chem
 from rdworks import Mol, MolLibr
 from rdworks.descriptor import rd_descriptor_f
@@ -158,3 +159,128 @@ def test_qed():
     libr = MolLibr(drug_smiles, drug_names).qed(
         properties=[k for k in rd_descriptor_f], progress=False
     )
+
+
+##################################################
+### Regression tests for mollibr.py fixes
+##################################################
+
+
+def _named_libr(n: int = 12) -> MolLibr:
+    """Library of n distinct alcohols named n0, n1, ..."""
+    return MolLibr(["C" * (i + 1) + "O" for i in range(n)], [f"n{i}" for i in range(n)])
+
+
+def _names(libr: MolLibr) -> list[str]:
+    return [mol.name for mol in libr]
+
+
+def test_init_from_conf():
+    conf = Mol("CCO", "ethanol").make_confs(n=1, seed=1).confs[0]
+    conf.props["custom"] = "keep"
+    libr = MolLibr([conf])
+    assert libr.count() == 1
+    mol = libr[0]
+    assert isinstance(mol, Mol)  # was None
+    assert (mol.name, mol.smiles, mol.num_confs) == ("ethanol/1", "CCO", 1)
+    assert mol.props["custom"] == "keep"
+
+
+def test_init_invalid_type():
+    # previously appended a second copy of the preceding molecule
+    with pytest.raises(TypeError, match="got int"):
+        MolLibr(["CCO", 123])
+
+
+def test_init_does_not_rename_named_mols():
+    mols = [Mol("CCO", "ethanol"), Mol("CCN", "ethylamine")]
+    libr = MolLibr(mols)
+    assert [m.name for m in mols] == ["ethanol", "ethylamine"]
+    assert _names(libr) == ["ethanol", "ethylamine"]
+
+
+def test_init_unnamed_smiles_get_entry_names():
+    assert _names(MolLibr(["CCO", "CCN"])) == ["entry.1", "entry.2"]
+
+
+def test_iteration_without_next():
+    libr = _named_libr(3)
+    assert not hasattr(MolLibr, "__next__")
+    assert _names(libr) == ["n0", "n1", "n2"]
+
+
+def test_eq_is_set_equality():
+    a = MolLibr(["CCO", "CCN"], ["a", "b"])
+    superset = MolLibr(["CCO", "CCN", "CCC"], ["a", "b", "c"])
+    reordered = MolLibr(["CCN", "CCO"], ["b", "a"])
+    assert a != superset  # a subset is not equal to its superset
+    assert superset != a
+    assert a == reordered
+    assert a != "CCO"
+
+
+def test_slice_keeps_names_and_settings():
+    libr = MolLibr(["CCO", "CCN", "CCC"], ["x", "y", "z"]).compute(
+        max_workers=2, chunksize=3, progress=True
+    )
+    sliced = libr[0:2]
+    assert _names(libr) == ["x", "y", "z"]  # original not renamed
+    assert _names(sliced) == ["x", "y"]
+    assert (sliced.max_workers, sliced.chunksize, sliced.progress) == (2, 3, True)
+
+
+def test_sub_keeps_order():
+    libr = _named_libr()
+    assert _names(libr - libr[0:1]) == [f"n{i}" for i in range(1, 12)]
+    assert _names(libr - libr[5]) == [f"n{i}" for i in range(12) if i != 5]  # Mol operand
+    assert _names(libr) == [f"n{i}" for i in range(12)]  # original unchanged
+
+
+def test_isub_keeps_order():
+    libr = _named_libr()
+    libr -= _named_libr()[1:11]
+    assert _names(libr) == ["n0", "n11"]
+
+
+def test_and_keeps_order():
+    libr = _named_libr()
+    other = MolLibr([libr[7], libr[3], libr[5]])  # different order
+    assert _names(libr & other) == ["n3", "n5", "n7"]
+    assert _names(libr & libr[4]) == ["n4"]
+
+
+def test_iand_keeps_order():
+    libr = _named_libr()
+    libr &= MolLibr([libr[4], libr[2]])
+    assert _names(libr) == ["n2", "n4"]
+
+
+def test_set_operators_remove_duplicates():
+    libr = _named_libr(3)
+    libr += libr[0]  # duplicate n0 at the end
+    assert _names(libr - libr[1]) == ["n0", "n2"]
+    assert _names(libr & libr) == ["n0", "n1", "n2"]
+
+
+def test_to_html():
+    html_string = MolLibr(["CCO", "CCN"], ["eth<1>", "amine"]).to_html()
+    assert html_string.startswith("<html><body>")
+    assert html_string.count("<svg") == 2
+    assert "eth&lt;1&gt;" in html_string  # names are escaped
+
+
+def test_to_batches_no_empty_batch():
+    libr = MolLibr(["CCO"])
+    libr[0].make_confs(n=2, seed=1)  # 9 atoms each
+    assert [len(b[3]) for b in libr.to_batches(batchsize_atoms=5)] == [1, 1]
+    assert [len(b[3]) for b in libr.to_batches(batchsize_atoms=1000)] == [2]
+
+
+def test_to_batches_uses_conformer_charge():
+    libr = MolLibr(["CCN"], ["ethylamine"])
+    mol = libr[0].make_confs(n=1, seed=1)
+    mol.confs[0] = mol.confs[0].protonate([2])  # N -> NH3+
+    assert mol.props["charge"] == 0
+    coord, numbers, charges, confs, mols = libr.to_batches()[0]
+    assert charges == [1]
+    assert len(numbers[0]) == len(coord[0]) == mol.confs[0].natoms

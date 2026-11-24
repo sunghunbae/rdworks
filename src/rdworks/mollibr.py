@@ -1,4 +1,5 @@
 import copy
+import html
 import itertools
 import pandas as pd
 import gzip
@@ -40,7 +41,7 @@ class MolLibr:
             names (Iterable | None, optional): a list/tuple/set of names. Defaults to None.
             std (bool, optional): whether to standardize molecules. Defaults to False.
             max_workers (int, optional): max workers for parallel calculation. Defaults to 4.
-            chunksize (int, optional): chunksize for parallel calculation. Defaults to 100.
+            chunksize (int, optional): chunksize for parallel calculation. Defaults to 10.
             progress (bool, optional): whether to show progress bar. Defaults to False.
 
         Raises:
@@ -81,13 +82,21 @@ class MolLibr:
                     _mol = Mol(molecular_input, name=name, std=std)
 
                 elif isinstance(molecular_input, Conf):
-                    _mol = Mol(
-                        molecular_input.rdmol, name=molecular_input.name, std=std
-                    ).props.update(molecular_input.props)
+                    # keeps the 3D conformer; Mol.props.update() returns None
+                    _mol = Mol(molecular_input, name=molecular_input.name or name, std=std)
+                    _mol.props.update(molecular_input.props)
+
+                else:
+                    raise TypeError(
+                        "MolLibr() expects rdworks.Mol, rdworks.Conf, SMILES, or "
+                        f"rdkit.Chem.Mol, got {type(molecular_input).__name__}"
+                    )
 
                 self.libr.append(_mol)
 
-            if not any(names):
+            # name unnamed libraries entry.1, entry.2, ...; molecules that already
+            # have names (e.g. rdworks.Mol inputs) are never renamed
+            if not any(mol.name for mol in self.libr):
                 self.rename(prefix="entry")
 
     def __str__(self) -> str:
@@ -107,14 +116,6 @@ class MolLibr:
         """
         return iter(self.libr)
 
-    def __next__(self) -> Mol:
-        """Next molecule.
-
-        Returns:
-            Mol: next molecule.
-        """
-        return next(self.libr)
-
     def __eq__(self, other: Self) -> bool:
         """Operator `==`.
 
@@ -122,12 +123,37 @@ class MolLibr:
             other (rdworks.MolLibr): other rdworks.MolLibr object.
 
         Returns:
-            Bool: True if other MolLibr object is identical with self.
+            Bool: True if both libraries contain the same set of molecules.
         """
         if isinstance(other, MolLibr):
-            return len(frozenset(self.libr) - frozenset(other.libr)) == 0
+            # set equality (a subset is not equal to its superset)
+            return frozenset(self.libr) == frozenset(other.libr)
 
         return False
+
+    def _new_like(self, libr: list) -> Self:
+        """Returns a new MolLibr holding `libr` with the same compute settings.
+
+        The molecules are not copied or renamed.
+        """
+        obj = MolLibr(
+            max_workers=self.max_workers,
+            chunksize=self.chunksize,
+            progress=self.progress,
+        )
+        obj.libr = list(libr)
+        return obj
+
+    def _ordered_set_op(self, other: Mol | Self, keep_common: bool) -> list:
+        """Unique molecules of self that are (not) in `other`, in library order."""
+        others = frozenset([other]) if isinstance(other, Mol) else frozenset(other.libr)
+        seen = set()
+        result = []
+        for mol in self.libr:
+            if ((mol in others) == keep_common) and (mol not in seen):
+                seen.add(mol)
+                result.append(mol)
+        return result
 
     def __getitem__(self, index: int | slice) -> Mol | Self:
         """Operator `[]`.
@@ -140,7 +166,8 @@ class MolLibr:
         """
         assert self.count() != 0, "library is empty"
         if isinstance(index, slice):
-            return MolLibr(self.libr[index])
+            # do not go through MolLibr(): it would rename unnamed molecules in place
+            return self._new_like(self.libr[index])
         else:
             return self.libr[index]
 
@@ -219,16 +246,8 @@ class MolLibr:
             "'-' operator expects Mol or MolLibr object"
         )
 
-        if isinstance(other, Mol):
-            difference = frozenset(self.libr) - frozenset([other])
-
-        elif isinstance(other, MolLibr):
-            difference = frozenset(self.libr) - frozenset(other.libr)
-
-        new_object = self.copy()
-        new_object.libr = list(difference)
-
-        return new_object
+        # set difference that keeps the library order
+        return self._new_like(self._ordered_set_op(other, keep_common=False))
 
     def __isub__(self, other: Mol | Self) -> Self:
         """Operator `-=`.
@@ -243,13 +262,7 @@ class MolLibr:
             "'-=' operator expects Mol or MolLibr object"
         )
 
-        if isinstance(other, Mol):
-            difference = frozenset(self.libr) - frozenset([other])
-
-        elif isinstance(other, MolLibr):
-            difference = frozenset(self.libr) - frozenset(other.libr)
-
-        self.libr = list(difference)
+        self.libr = self._ordered_set_op(other, keep_common=False)
 
         return self
 
@@ -268,16 +281,8 @@ class MolLibr:
             "'&' operator expects Mol or MolLibr object"
         )
 
-        if isinstance(other, Mol):
-            intersection = frozenset(self.libr) & frozenset([other])
-
-        elif isinstance(other, MolLibr):
-            intersection = frozenset(self.libr) & frozenset(other.libr)
-
-        new_object = self.copy()
-        new_object.libr = list(intersection)
-
-        return new_object
+        # set intersection that keeps the library order
+        return self._new_like(self._ordered_set_op(other, keep_common=True))
 
     def __iand__(self, other: Mol | Self) -> Self:
         """Operator `&=`.
@@ -292,13 +297,7 @@ class MolLibr:
             "'&=' operator expects Mol or MolLibr object"
         )
 
-        if isinstance(other, Mol):
-            intersection = frozenset(self.libr) & frozenset([other])
-
-        elif isinstance(other, MolLibr):
-            intersection = frozenset(self.libr) & frozenset(other.libr)
-
-        self.libr = list(intersection)
+        self.libr = self._ordered_set_op(other, keep_common=True)
 
         return self
 
@@ -490,7 +489,7 @@ class MolLibr:
         else:
             raise TypeError("MolLibr.similar() expects Mol object")
         with ProcessPoolExecutor(max_workers=obj.max_workers) as executor:
-            if self.progress:
+            if obj.progress:
                 mask = list(
                     tqdm(
                         executor.map(
@@ -820,7 +819,8 @@ class MolLibr:
         """Clusters molecules using fingerprint.
 
         Args:
-            threshold (float, optional): Tanimoto similarity threshold. Defaults to 0.3.
+            threshold (float, optional): Tanimoto distance (1 - similarity) threshold
+                for Butina clustering. Defaults to 0.3 (i.e. similarity >= 0.7).
             ordered (bool, optional): order clusters by size of cluster. Defaults to True.
             drop_singleton (bool, optional): exclude singletons. Defaults to True.
 
@@ -1006,7 +1006,8 @@ class MolLibr:
         """
         HTML = "<html><body>"
         for mol in self.libr:
-            HTML += mol.to_html(htmlbody=False)
+            # rdworks.Mol has no to_html(); embed its SVG depiction with the name
+            HTML += f"<figure>{mol.to_svg()}<figcaption>{html.escape(mol.name)}</figcaption></figure>"
         HTML += "</body></html>"
         return HTML
 
@@ -1108,7 +1109,7 @@ class MolLibr:
         for mol in self.libr:
             for conf in mol.confs:
                 n_atoms = conf.props["atoms"]
-                if (batch_n_atoms + n_atoms) > batchsize_atoms:
+                if batch_confs and (batch_n_atoms + n_atoms) > batchsize_atoms:
                     pre_batches.append((batch_mols, batch_confs, batch_n_atoms))
                     # start over a new batch
                     batch_mols = [mol]
@@ -1127,7 +1128,8 @@ class MolLibr:
         for i, (batch_mols, batch_confs, batch_n_atoms) in enumerate(
             pre_batches, start=1
         ):
-            charges = [mol.props["charge"] for mol in batch_mols]
+            # conformer charge (may differ from the molecule after (de)protonation)
+            charges = [conf.charge for conf in batch_confs]
             coord = [
                 conf.rdmol.GetConformer().GetPositions().tolist()
                 for conf in batch_confs

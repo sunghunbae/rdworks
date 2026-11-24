@@ -1,2 +1,19 @@
+# Line endings: store text files with LF in the repository and check them out with
+# the platform's native ending (LF on Linux/macOS and Databricks). Editors that save
+# LF or CRLF no longer produce whole-file diffs.
+* text=auto
+
+# Binary files: never convert line endings or show text diffs
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.gz binary
+*.zip binary
+*.inv binary
+*.swp binary
+xtbrestart binary
+
 # GitHub syntax highlighting / collapse generated lock file
 pixi.lock merge=binary linguist-language=YAML linguist-generated=true

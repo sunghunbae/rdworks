@@ -78,9 +78,32 @@ class Mol:
 
     MFP2 = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
 
-    ETKDG_params = rdDistGeom.ETKDGv3()
-    ETKDG_params.useSmallRingTorsions = True
-    ETKDG_params.maxIterations = 2000
+    @staticmethod
+    def etkdg_params(
+        seed: int | None = None, prune_rms: float = -1.0, num_threads: int = 0
+    ) -> rdDistGeom.EmbedParameters:
+        """Returns a fresh ETKDGv3 parameter object used by `make_confs()`.
+
+        A new object is built on every call (RDKit EmbedParameters cannot be copied),
+        so per-call settings such as the random seed never leak between calls.
+
+        Args:
+            seed (int | None, optional): random seed for reproducible embedding.
+                None means non-deterministic. Defaults to None.
+            prune_rms (float, optional): RMSD threshold (Angstrom) for pruning
+                near-duplicate conformers during embedding; <= 0 disables. Defaults to -1.0.
+            num_threads (int, optional): number of threads; 0 uses all available. Defaults to 0.
+
+        Returns:
+            rdDistGeom.EmbedParameters: ETKDGv3 parameters.
+        """
+        params = rdDistGeom.ETKDGv3()
+        params.useSmallRingTorsions = True
+        params.maxIterations = 2000
+        params.randomSeed = -1 if seed is None else int(seed)
+        params.pruneRmsThresh = prune_rms
+        params.numThreads = num_threads
+        return params
 
     def __init__(
         self,
@@ -163,7 +186,7 @@ class Mol:
         rdDepictor.Compute2DCoords(self.rdmol)
 
         try:
-            self.name = str(name)
+            self.name = "" if name is None else str(name)
         except:
             self.name = "untitled"
 
@@ -190,21 +213,19 @@ class Mol:
         """
         return f"<Mol({self.smiles} name={self.name} conformers={self.num_confs})>"
 
-    def __hash__(self) -> str:
-        """Hashed SMILES string of the molecule.
+    def __hash__(self) -> int:
+        """Hashed InChIKey of the molecule.
 
-        When you compare two objects using the `==` operator, Python first checks
-        if their hash values are equal. If they are different, the objects are
-        considered unequal, and the __eq__ method is not called.
-        The return value of `__hash__` method is also used as dictionary keys or set elements.
+        Must be consistent with `__eq__` (which compares InChIKeys): objects that
+        compare equal must have the same hash, otherwise sets and dict keys break.
 
         Examples:
             >>> m1 == m2
 
         Returns:
-            str: hashed SMILES string.
+            int: hash of the InChIKey.
         """
-        return hash(self.smiles)
+        return hash(self.InChIKey)
 
     def __eq__(self, other: Self) -> bool:
         """True if `other` Mol is identical with this Mol.
@@ -220,6 +241,8 @@ class Mol:
         Returns:
             bool: True if identical.
         """
+        if not isinstance(other, Mol):
+            return NotImplemented
         return self.InChIKey == other.InChIKey
 
     def __iter__(self) -> Iterator:
@@ -233,14 +256,6 @@ class Mol:
             Iterator: conformers of the molecule.
         """
         return iter(self.confs)
-
-    def __next__(self) -> Conf:
-        """Next conformer of the molecule.
-
-        Returns:
-            Conf: Conf object of one of conformers of the molecule.
-        """
-        return next(self.confs)
 
     def __getitem__(self, index: int | slice) -> Conf | Self:
         """Conformer object of conformers of the molecule with given index or slice of indexes.
@@ -580,44 +595,98 @@ class Mol:
 
         return self
 
-    def make_confs(self, n: int = 50, method: str = "ETKDG", **kwargs) -> Self:
-        """Generates 3D conformers.
+    def make_confs(
+        self,
+        n: int = 50,
+        method: str = "ETKDG",
+        calculator: str | Callable = "MMFF94",
+        water: str | None = None,
+        batchsize_atoms: int = 0,
+        seed: int | None = None,
+        prune_rms: float = -1.0,
+        verbose: bool = False,
+    ) -> Self:
+        """Generates 3D conformers and ranks them by single-point energy.
+
+        Sets `E_tot(kcal/mol)` and `E_rel(kcal/mol)` for each conformer, sorted by
+        ascending energy. Existing conformers are replaced only on success.
 
         Args:
             n (int, optional): number of conformers to generate. Defaults to 50.
-            method (str, optional): conformer generation method.
-                Choices are `ETKDG`, `CONFORGE`. Defaults to 'ETKDG'.
+            method (str, optional): conformer generation method. Only `ETKDG`
+                (RDKit ETKDGv3) is supported. Defaults to 'ETKDG'.
+            calculator (str | Callable, optional): energy model used for ranking,
+                passed to `singlepoint_confs()`. If `MMFF94`/`MMFF94s` lacks parameters
+                for the molecule (e.g. B, Se, metals), `UFF` is used instead with a warning.
+                Defaults to 'MMFF94'.
+            water (str | None, optional): xTB solvation model ('gbsa' or 'alpb'). Defaults to None.
+            batchsize_atoms (int, optional): batch size for Callable calculators,
+                passed to `singlepoint_confs()`. Defaults to 0.
+            seed (int | None, optional): random seed for reproducible conformers.
+                Defaults to None (non-deterministic).
+            prune_rms (float, optional): RMSD threshold (Angstrom) for pruning
+                near-duplicate conformers during embedding; <= 0 disables. Defaults to -1.0.
+            verbose (bool, optional): log a summary. Defaults to False.
+
+        Raises:
+            ValueError: if `n` < 1 or `method` is not supported.
+            RuntimeError: if no conformer could be embedded.
 
         Returns:
             Self: modified self.
-
-        Reference:
-            T. Seidel, C. Permann, O. Wieder, S. M. Kohlbacher, T. Langer,
-            High-Quality Conformer Generation with CONFORGE: Algorithm and Performance Assessment.
-            J. Chem. Inf. Model. 63, 5549-5570 (2023).
         """
-        verbose = kwargs.get("verbose", False)
+        if n < 1:
+            raise ValueError(f"make_confs() expects n >= 1, got {n}")
 
-        self.confs = []
-
-        if method.upper() == "ETKDG":
-            rdmol_H = Chem.AddHs(
-                self.rdmol, addCoords=True
-            )  # returns a copy with hydrogens added
-            conf_ids = rdDistGeom.EmbedMultipleConfs(
-                rdmol_H, numConfs=n, params=self.ETKDG_params
+        if method.upper() != "ETKDG":
+            raise ValueError(
+                f"make_confs() unsupported method {method!r}; supported: 'ETKDG'"
             )
-            for rdConformer in rdmol_H.GetConformers():
-                # number of atoms should match with conformer(s)
-                rdmol_conf = Chem.Mol(rdmol_H)
-                rdmol_conf.RemoveAllConformers()
-                rdmol_conf.AddConformer(Chem.Conformer(rdConformer))
-                conf = Conf(rdmol_conf)
-                self.confs.append(conf)
 
-        # energy evaluations for ranking
-        calculator = kwargs.get("calculator", "MMFF94")
-        self.singlepoint_confs(calculator, **kwargs)
+        rdmol_H = Chem.AddHs(
+            self.rdmol, addCoords=True
+        )  # returns a copy with hydrogens added
+        rdDistGeom.EmbedMultipleConfs(
+            rdmol_H,
+            numConfs=n,
+            params=Mol.etkdg_params(seed=seed, prune_rms=prune_rms),
+        )
+        if rdmol_H.GetNumConformers() == 0:
+            raise RuntimeError(
+                f"make_confs() failed to embed any conformer for {self.name!r} ({self.smiles})"
+            )
+
+        confs = []
+        for rdConformer in rdmol_H.GetConformers():
+            # number of atoms should match with conformer(s)
+            rdmol_conf = Chem.Mol(rdmol_H)
+            rdmol_conf.RemoveAllConformers()
+            rdmol_conf.AddConformer(Chem.Conformer(rdConformer))
+            confs.append(Conf(rdmol_conf))
+
+        # fall back to UFF when MMFF has no parameters for this molecule
+        if (
+            isinstance(calculator, str)
+            and calculator.lower() in ("mmff94", "mmff", "mmff94s")
+            and not Chem.rdForceFieldHelpers.MMFFHasAllMoleculeParams(rdmol_H)
+        ):
+            logger.warning(
+                f"make_confs() {calculator} has no parameters for {self.name!r}; using UFF instead"
+            )
+            calculator = "UFF"
+
+        # replace existing conformers only after embedding succeeded;
+        # restore them if the energy evaluation fails
+        previous_confs = self.confs
+        self.confs = confs
+        try:
+            # energy evaluations for ranking
+            self.singlepoint_confs(
+                calculator, water=water, batchsize_atoms=batchsize_atoms
+            )
+        except Exception:
+            self.confs = previous_confs
+            raise
 
         # set relative energy, E_rel(kcal/mol)
         sort_by = "E_tot(kcal/mol)"
@@ -629,7 +698,7 @@ class Mol:
             conf.props.update({"E_rel(kcal/mol)": conf.props[sort_by] - lowest_energy})
 
         # rename conformers
-        self = self.rename()
+        self.rename()
 
         if verbose:
             rot_bonds = rd_descriptor_f["RotBonds"](self.rdmol)
@@ -847,8 +916,12 @@ class Mol:
         if calculator is not None:
             # re-calculate potential energies
             if verbose:
-                logger.info(f"sort_cons() calculate potential energy by {calculator}")
-            self.singlepoint_confs(calculator, **kwargs)
+                logger.info(f"sort_confs() calculate potential energy by {calculator}")
+            self.singlepoint_confs(
+                calculator,
+                water=kwargs.get("water"),
+                batchsize_atoms=kwargs.get("batchsize_atoms", 0),
+            )
 
         if all(["E_tot(kcal/mol)" in conf.props for conf in self.confs]):
             sort_by = "E_tot(kcal/mol)"
@@ -885,6 +958,12 @@ class Mol:
         Returns:
             Self: modified self.
         """
+
+        supported = ("rigid_fragment", "CrippenO3A", "MMFFO3A", "best_rms")
+        if method not in supported:
+            raise ValueError(
+                f"align_confs() unsupported method {method!r}; supported: {supported}"
+            )
 
         if self.num_confs < 2:
             # nothing to do
@@ -1035,11 +1114,14 @@ class Mol:
                 torsions.append(np.array(t_radians))
             # torsions: num.confs x num.torsions
             N = len(torsions)
+            num_torsions = max(len(torsion_angle_atom_indices_list), 1)
             lower_triangle_values = []
             for i in range(N):
                 for j in range(i):
-                    rad_diff = np.fmod(torsions[i] - torsions[j], 2.0 * np.pi)
-                    rmsd = np.sqrt(np.sum(rad_diff**2) / N)
+                    # wrap angular difference into [-pi, pi) (e.g. 179 vs -179 deg -> 2 deg)
+                    rad_diff = (torsions[i] - torsions[j] + np.pi) % (2.0 * np.pi) - np.pi
+                    # root-mean-square over torsion angles
+                    rmsd = np.sqrt(np.sum(rad_diff**2) / num_torsions)
                     # np.max(np.absolute(rad_diff))
                     lower_triangle_values.append(rmsd)
 
@@ -1291,8 +1373,9 @@ class Mol:
 
         if cluster and self.num_confs > 1:
             # drop non-centroid cluster member(s)
+            # cluster_confs() sets `cluster_centroid`; `centroid` kept for older data
             mask = [
-                _.props["centroid"] if "centroid" in _.props else True
+                _.props.get("cluster_centroid", _.props.get("centroid", True))
                 for _ in self.confs
             ]
             self.confs = list(itertools.compress(self.confs, mask))
@@ -1486,6 +1569,9 @@ class Mol:
         Returns:
             Self.
         """
+        if rotate and axis.lower() not in ("x", "y", "z"):
+            raise ValueError(f"draw() axis must be 'x', 'y', or 'z', got {axis!r}")
+
         rdDepictor.SetPreferCoordGen(coordgen)
         rdDepictor.Compute2DCoords(self.rdmol)
 
@@ -1621,6 +1707,8 @@ class Mol:
             bool: True if matches.
         """
         query = Chem.MolFromSmarts(substr)
+        if query is None:
+            raise ValueError(f"has_substr() invalid SMARTS/SMILES {substr!r}")
         return self.rdmol.HasSubstructMatch(query)
 
     def is_matching(self, terms: str | Path, invert: bool = False) -> bool:
@@ -1646,7 +1734,7 @@ class Mol:
 
         elif isinstance(terms, str):
             if terms.startswith("~") or terms.startswith("!"):
-                terms = terms.replace("~", "").replace("!", "")
+                terms = terms[1:]  # strip only the leading inversion marker
                 invert = invert ^ True
             try:
                 path = Path(terms)  # test if terms points to a xml file
@@ -1673,7 +1761,8 @@ class Mol:
                 else:
                     val = self.props[name]
                 # return if lower and upper boundaries are satisfied
-                if ((not lb) or (val >= lb)) and ((not ub) or (val <= ub)):
+                # None means no bound; 0.0 is a valid bound
+                if (lb is None or val >= lb) and (ub is None or val <= ub):
                     mask.append(True)
                 else:
                     mask.append(False)

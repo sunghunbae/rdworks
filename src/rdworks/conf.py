@@ -425,21 +425,26 @@ class Conf:
                     self.rdmol, mmffVariant="MMFF94"
                 )
                 ff = Chem.rdForceFieldHelpers.MMFFGetMoleculeForceField(self.rdmol, mp)
-                PE = ff.CalcEnergy()
 
             elif calculator.lower() == "MMFF94s".lower():
                 mp = Chem.rdForceFieldHelpers.MMFFGetMoleculeProperties(
                     self.rdmol, mmffVariant="MMFF94s"
                 )
                 ff = Chem.rdForceFieldHelpers.MMFFGetMoleculeForceField(self.rdmol, mp)
-                PE = ff.CalcEnergy()
 
             elif calculator.lower() == "UFF".lower():
                 ff = Chem.rdForceFieldHelpers.UFFGetMoleculeForceField(self.rdmol)
-                PE = ff.CalcEnergy()
 
             else:
                 raise ValueError("Unsupported calculator")
+
+            if calculator.lower() != "xTB".lower():
+                if ff is None:
+                    raise ValueError(
+                        f"{calculator} force field could not be set up for {self.name!r} "
+                        "(missing parameters); try calculator='UFF'"
+                    )
+                PE = ff.CalcEnergy()
 
             self.props.update({"E_tot(kcal/mol)": PE})
 

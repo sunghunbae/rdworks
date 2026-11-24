@@ -27,9 +27,9 @@ def complete_stereoisomers(
     Args:
         molecular_input (Union[Mol, str, Chem.Mol]): input molecule.
         name (Optional[str], optional): name of the molecule. Defaults to None.
-        std (bool, optional): whether to standardize the input. Defaults to False.
+        std (bool, optional): whether to standardize the input. Only applies to SMILES or
+            rdkit.Chem.Mol input. Defaults to False.
         override (bool, optional): whether to override input stereoisomers. Defaults to False.
-        proper_wedged_bonds (bool, optional): whether to generate proper wedged bonds for chiral centers. Defaults to True.
         **kwargs: additional keyword arguments passed to MolLibr.compute().
 
     Raises:
@@ -38,21 +38,17 @@ def complete_stereoisomers(
     Returns:
         MolLibr: a library of complete stereoisomers.
     """
-    from rdworks import Mol, MolLibr
-
     if isinstance(molecular_input, Mol):
+        # work on a copy: rename() and remove_stereo() modify the Mol in place
+        mol = molecular_input.copy()
         if name:
-            mol = molecular_input.rename(name)
-        else:
-            mol = molecular_input
-    elif isinstance(molecular_input, str) or isinstance(molecular_input, Chem.Mol):
-        mol = Mol(molecular_input, name, std)
+            mol = mol.rename(name)
+    elif isinstance(molecular_input, (str, Chem.Mol)):
+        mol = Mol(molecular_input, name or "", std)
     else:
         raise TypeError(
             "complete_stereoisomers() expects rdworks.Mol, SMILES or rdkit.Chem.Mol object"
         )
-
-    ring_bond_stereo_info = mol.ring_bond_stereo_info
 
     if override:
         mol = mol.remove_stereo()
@@ -75,6 +71,7 @@ def complete_stereoisomers(
     #     for rdmol in rdmols:
     #         correct_wedged_bonds(rdmol)
 
+    # ring_bond_stereo_info = mol.ring_bond_stereo_info  (must be read before remove_stereo)
     # if len(ring_bond_stereo_info) > 0:
     #     ring_cis_trans = []
     #     for rdmol in rdmols:
@@ -95,17 +92,29 @@ def complete_stereoisomers(
     return libr
 
 
-def can_have_stereo(bond):
-    """Check if a double bond can have E/Z stereochemistry"""
-    atom1, atom2 = bond.GetBeginAtom(), bond.GetEndAtom()
+def can_have_stereo(bond: Chem.Bond) -> bool:
+    """Check if a double bond can have E/Z stereochemistry.
 
-    # Check if both atoms have at least 2 non-hydrogen neighbors
-    for atom in [atom1, atom2]:
-        non_h_neighbors = [n for n in atom.GetNeighbors() if n.GetAtomicNum() != 1]
-        if len(non_h_neighbors) < 2:
-            return False
+    Uses RDKit's stereo perception, which correctly handles implicit H, lone pairs
+    (e.g. imines C=N-R), identical substituents, and small-ring double bonds.
+    """
+    if bond.GetBondType() != Chem.BondType.DOUBLE:
+        return False
 
-    return True
+    return any(
+        si.type == Chem.StereoType.Bond_Double and si.centeredOn == bond.GetIdx()
+        for si in Chem.FindPotentialStereo(bond.GetOwningMol())
+    )
+
+
+def _unspecified_double_bonds(rdmol: Chem.Mol) -> list[int]:
+    """Returns indices of double bonds with potential but unassigned E/Z stereochemistry."""
+    return [
+        si.centeredOn
+        for si in Chem.FindPotentialStereo(rdmol)
+        if si.type == Chem.StereoType.Bond_Double
+        and si.specified != Chem.StereoSpecified.Specified
+    ]
 
 
 def complete_tautomers(mol: Mol, **kwargs) -> MolLibr:
@@ -126,14 +135,7 @@ def complete_tautomers(mol: Mol, **kwargs) -> MolLibr:
 
     for tautomer in tautomers:
         # Find unspecified double bonds that could have E/Z stereo
-        unspecified_bonds = []
-        for bond in tautomer.GetBonds():
-            if (
-                bond.GetBondType() == Chem.BondType.DOUBLE
-                and bond.GetStereo() == Chem.BondStereo.STEREONONE
-                and can_have_stereo(bond)
-            ):
-                unspecified_bonds.append(bond.GetIdx())
+        unspecified_bonds = _unspecified_double_bonds(tautomer)
 
         if unspecified_bonds:
             # Enumerate all possible stereoisomers
@@ -143,12 +145,11 @@ def complete_tautomers(mol: Mol, **kwargs) -> MolLibr:
         else:
             all_stereoisomers.append(tautomer)
 
-    if len(all_stereoisomers) > 1:
-        return (
-            MolLibr(all_stereoisomers)
-            .unique()
-            .rename(mol.name, sep=".")
-            .compute(**kwargs)
-        )
-
-    return MolLibr(all_stereoisomers).compute(**kwargs)
+    # rename() adds serial numbers only when more than one molecule remains;
+    # a single result keeps the input name
+    return (
+        MolLibr(all_stereoisomers)
+        .unique()
+        .rename(mol.name, sep=".")
+        .compute(**kwargs)
+    )

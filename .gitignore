@@ -11,3 +11,8 @@ wheels/
 
 # pytest-generated files
 .pytest_cache/
+
+# pixi environments and build artifacts
+.pixi/*
+!.pixi/config.toml
+*.conda

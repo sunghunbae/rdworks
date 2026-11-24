@@ -1,5 +1,11 @@
 ## API
 
+::: rdworks.complete
+    handler: python
+    options:
+        show_source: false
+
+
 ::: rdworks.stereoisomers
     handler: python
     options:

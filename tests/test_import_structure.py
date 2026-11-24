@@ -131,12 +131,35 @@ def test_writers_do_not_import_classes():
     assert not offending, offending
 
 
-@pytest.mark.parametrize("module", ["io.py", "readers.py", "writers.py"])
+@pytest.mark.parametrize("module", ["io.py", "readers.py", "writers.py", "complete.py"])
 def test_io_modules_have_no_function_level_rdworks_imports(module):
     path = PACKAGE_DIR / module
     every = set(_rdworks_imports(path, module_level_only=False))
     top = set(_rdworks_imports(path, module_level_only=True))
     assert not every - top, sorted(every - top)
+
+
+@pytest.mark.parametrize(
+    "module, alias",
+    [("stereoisomers.py", "complete_stereoisomers"), ("tautomers.py", "complete_tautomers")],
+)
+def test_enumerator_modules_stay_below_classes(module, alias):
+    # rdworks.mol and rdworks.microstate import these modules: they must not import
+    # Mol/MolLibr; the only allowed lazy import is the PEP 562 alias to rdworks.complete
+    path = PACKAGE_DIR / module
+    above = CLASS_MODULES | {"rdworks.complete", "rdworks.io", "rdworks.readers"}
+    top = _rdworks_imports(path, module_level_only=True)
+    assert not [(line, name) for line, name in top if name in above], top
+
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    lazy = [
+        (func.name, node.module, [a.name for a in node.names])
+        for func in tree.body
+        if isinstance(func, ast.FunctionDef)
+        for node in ast.walk(func)
+        if isinstance(node, ast.ImportFrom)
+    ]
+    assert lazy == [("__getattr__", "rdworks.complete", [alias])], lazy
 
 
 @pytest.mark.parametrize("cls_name, kind", [("Conf", "conf"), ("Mol", "mol"), ("MolLibr", "libr")])

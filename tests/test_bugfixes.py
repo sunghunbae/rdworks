@@ -6,9 +6,9 @@ from rdkit.Chem import rdMolTransforms
 
 from rdworks import Mol, MolLibr
 from rdworks.io import read_csv, read_sdf, read_smi
-from rdworks.stereoisomers import can_have_stereo, complete_stereoisomers
+from rdworks.complete import complete_stereoisomers, complete_tautomers
+from rdworks.stereoisomers import can_have_stereo
 from rdworks.utils import compute
-from rdworks.tautomers import complete_tautomers
 
 
 ACETAMINOPHEN = "CC(=O)Nc1ccc(O)cc1"
@@ -65,6 +65,16 @@ def test_complete_backward_compatible_aliases():
     assert c.complete_stereoisomers is s.complete_stereoisomers
     assert c.can_have_stereo is s.can_have_stereo
     assert c.complete_tautomers is t.complete_tautomers
+    # `from ... import` of the PEP 562 aliases works too
+    from rdworks.stereoisomers import complete_stereoisomers as alias_s
+    from rdworks.tautomers import complete_tautomers as alias_t
+
+    assert alias_s is c.complete_stereoisomers
+    assert alias_t is c.complete_tautomers
+    with pytest.raises(AttributeError):
+        s.no_such_function
+    with pytest.raises(AttributeError):
+        t.no_such_function
 
 
 ##################################################

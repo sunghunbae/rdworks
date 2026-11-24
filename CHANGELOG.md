@@ -2,7 +2,7 @@
 
 ## Unreleased
 - added pixi workspace and conda package build (`pixi build`) configuration to `pyproject.toml`
-- moved `complete_stereoisomers()` and `can_have_stereo()` to `stereoisomers.py` and `complete_tautomers()` to `tautomers.py` (`rdworks.complete` keeps backward-compatible aliases)
+- `complete_stereoisomers()` and `complete_tautomers()` live in `rdworks.complete`, which imports `Mol` and `MolLibr` at module level; `rdworks.stereoisomers` and `rdworks.tautomers` keep only the RDKit-level helpers (`can_have_stereo()`, the enumerators) plus lazy aliases, so `from rdworks.stereoisomers import complete_stereoisomers` and `from rdworks.tautomers import complete_tautomers` still work
 - fixed `can_have_stereo()` missing E/Z double bonds (e.g. 2-butene, imines, enols), which undercounted `complete_tautomers()` results
 - fixed `complete_stereoisomers()` modifying the input `Mol` (name and stereochemistry)
 - fixed `complete_tautomers()` dropping the name when a single result remains

@@ -1,16 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from rdkit import Chem
 from rdkit.Chem.EnumerateStereoisomers import (
     EnumerateStereoisomers,
     StereoEnumerationOptions,
 )
-
-if TYPE_CHECKING:
-    # rdworks.mol imports this module, so Mol/MolLibr are imported lazily at runtime
-    from rdworks import Mol, MolLibr
 
 
 def correct_wedged_bonds(rdmol: Chem.Mol) -> None:
@@ -153,76 +147,14 @@ def _unspecified_double_bonds(rdmol: Chem.Mol) -> list[int]:
     ]
 
 
-def complete_stereoisomers(
-    molecular_input: str | Chem.Mol | Mol,
-    name: str | None = None,
-    std: bool = False,
-    override: bool = False,
-    **kwargs,
-) -> MolLibr:
-    """Completes stereoisomers and returns a rdworks.MolLibr.
+def __getattr__(attr: str):
+    """Backward-compatible alias: `complete_stereoisomers()` moved to `rdworks.complete`.
 
-    Small rings (< 8 atoms): 
-        RDKit does NOT enumerate E/Z stereochemistry for double bonds 
-        because the ring constraints make one configuration impossible
-    
-    Macrocycles (≥ 8 atoms): 
-        RDKit CAN enumerate E/Z stereochemistry for double bonds 
-        since both configurations are geometrically feasible
-
-    Args:
-        molecular_input (Union[Mol, str, Chem.Mol]): input molecule.
-        name (Optional[str], optional): name of the molecule. Defaults to None.
-        std (bool, optional): whether to standardize the input. Only applies to SMILES or
-            rdkit.Chem.Mol input. Defaults to False.
-        override (bool, optional): whether to override input stereoisomers. Defaults to False.
-        **kwargs: additional keyword arguments passed to MolLibr.compute().
-
-    Raises:
-        TypeError: if `molecular_input` is not rdworks.Mol, SMILES, or rdkit.Chem.Mol object.
-
-    Returns:
-        MolLibr: a library of complete stereoisomers.
+    `rdworks.complete` imports `rdworks.mol`, which imports `rdworks.stereoisomers`,
+    so the alias is resolved lazily (PEP 562) instead of imported at module level.
     """
-    from rdworks import Mol, MolLibr  # lazy import to avoid a circular import
+    if attr == "complete_stereoisomers":
+        from rdworks.complete import complete_stereoisomers
 
-    if isinstance(molecular_input, Mol):
-        # work on a copy: rename() and remove_stereo() modify the Mol in place
-        mol = molecular_input.copy()
-        if name:
-            mol = mol.rename(name)
-    elif isinstance(molecular_input, (str, Chem.Mol)):
-        mol = Mol(molecular_input, name or "", std)
-    else:
-        raise TypeError(
-            "complete_stereoisomers() expects rdworks.Mol, SMILES or rdkit.Chem.Mol object"
-        )
-
-    if override:
-        mol = mol.remove_stereo()
-
-    rdmols = enumerate_stereoisomers(mol.rdmol)
-
-    # if proper_wedged_bonds:
-    #     for rdmol in rdmols:
-    #         correct_wedged_bonds(rdmol)
-
-    # ring_bond_stereo_info = mol.ring_bond_stereo_info  (must be read before remove_stereo)
-    # if len(ring_bond_stereo_info) > 0:
-    #     ring_cis_trans = []
-    #     for rdmol in rdmols:
-    #         ring_cis_trans += enumerate_ring_bond_stereoisomers(
-    #             rdmol, ring_bond_stereo_info, override=override
-    #         )
-    #     if len(ring_cis_trans) > 0:
-    #         rdmols = ring_cis_trans
-
-    if len(rdmols) > 1:
-        libr = MolLibr(rdmols).unique().rename(mol.name, sep=".").compute(**kwargs)
-    else:
-        libr = MolLibr(rdmols).rename(mol.name).compute(**kwargs)
-
-    for _ in libr:
-        _.props.update(mol.props)
-
-    return libr
+        return complete_stereoisomers
+    raise AttributeError(f"module {__name__!r} has no attribute {attr!r}")

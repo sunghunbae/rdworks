@@ -83,7 +83,7 @@ def centroid_betweenness(num, communityAssignment, filtered_rmsd_matrix):
 
     # Sort centers by size of clusters in descending order
     centralDf = pd.DataFrame({"size": comm_size}, index=centralNodes)
-    centralDf.sort_values(by="size", ascending=False, inplace=True)
+    centralDf = centralDf.sort_values(by="size", ascending=False)
 
     return list(centralDf.index)
 

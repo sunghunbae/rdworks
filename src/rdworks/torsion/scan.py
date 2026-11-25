@@ -1,4 +1,4 @@
-"""Torsion utilities: rotatable-bond detection, torsion fragmentation, and torsion scans.
+"""Torsion energy scans (potential energy profiles).
 
 Torsion scan functions take an `rdworks.Conf` and store potential energy profiles
 in `conf.props['torsion']`. `Conf` methods of the same names delegate here.
@@ -7,16 +7,15 @@ in `conf.props['torsion']`. `Conf` methods of the same names delegate here.
 import itertools
 import numpy as np
 
-from collections import deque
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 from rdkit import Chem
 from rdworks.batch import prepare_batches
 from rdworks.std import clean_2d
-from rdworks.xtb.wrapper import GFN2xTB
+from rdworks.torsion.fragment import create_torsion_fragment
 
 if TYPE_CHECKING:
-    # only for type hints; a runtime import would be circular (rdworks.conf imports this module)
+    # only for type hints; a runtime import would be circular (rdworks.conf imports rdworks.torsion)
     from rdworks.conf import Conf
 
 

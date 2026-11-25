@@ -1,6 +1,7 @@
 # Change Log
 
 ## Unreleased
+- split `rdworks.torsion` into a package: `rdworks.torsion.atoms` (rotatable-bond detection), `rdworks.torsion.fragment` (torsion fragments), `rdworks.torsion.scan` (torsion energy scans), and `rdworks.torsion.plot` (plot data); all public functions are re-exported from `rdworks.torsion`, so existing imports keep working
 - changed `import rdworks` to only attach a `logging.NullHandler` to the `rdworks` logger (no handler, level or format is set) and to no longer change RDKit's log level; configure output with `logging.basicConfig(level=logging.INFO)` and silence RDKit with `RDLogger.DisableLog("rdApp.*")`
 - replaced all bare `except:` and swallowed `except Exception` blocks with specific exception types (original errors are chained with `from e`); unrelated programming errors are no longer hidden
 - replaced diagnostic `print()` calls with module loggers (`logging.getLogger(__name__)`), including `verbose=True` output of `breakup()` and `StateNetwork.build()` (now `INFO` level)

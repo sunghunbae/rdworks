@@ -1,3 +1,5 @@
+"""Rotatable-bond (dihedral a-b-c-d) detection."""
+
 from rdkit import Chem
 
 

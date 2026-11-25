@@ -1,3 +1,6 @@
+"""Plot data (torsion angle vs. relative energy) from torsion scan results."""
+
+
 def get_torsion_plot_data(torsion_profiles: list[dict], idx: int | None = None) -> dict:
     """Returns plot data (torsion angle vs. relative energy) from torsion scan results.
 

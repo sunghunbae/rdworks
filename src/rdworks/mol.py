@@ -2082,21 +2082,30 @@ class Mol:
         )
 
     ##################################################
-    ### Report Functions (returns None)
+    ### Report Functions (return str)
     ##################################################
 
-    def report_stereo(self) -> None:
-        """Report stereochemistry information for debug"""
+    def report_stereo(self) -> str:
+        """Returns a report of stereochemistry information (for debugging).
+
+        Examples:
+            >>> print(mol.report_stereo())
+
+        Returns:
+            str: multi-line report.
+        """
+        lines = []
         num_chiral_centers = rdMolDescriptors.CalcNumAtomStereoCenters(self.rdmol)
         # Returns the total number of atomic stereocenters (specified and unspecified)
         num_unspecified_chiral_centers = (
             rdMolDescriptors.CalcNumUnspecifiedAtomStereoCenters(self.rdmol)
         )
-        print(
+        lines.append(
             f"chiral centers = unspecified {num_unspecified_chiral_centers} / total {num_chiral_centers}"
         )
-        print(f"stereogenic double bonds =")
+        lines.append("stereogenic double bonds =")
         for element in Chem.FindPotentialStereo(self.rdmol):
+            line = ""
             # element.type= Atom_Octahedral, Atom_SquarePlanar, Atom_Tetrahedral,
             #               Atom_TrigonalBipyramidal,
             #               Bond_Atropisomer, Bond_Cumulene_Even, Bond_Double,
@@ -2106,21 +2115,28 @@ class Mol:
                 atom1 = bond.GetBeginAtom().GetSymbol()
                 atom2 = bond.GetEndAtom().GetSymbol()
                 is_nitrogen = atom1 == "N" or atom2 == "N"
-                print(f"  {element.type} bond: {element.centeredOn}", end=" ")
-                print(f"ring: {bond.IsInRing()} N: {is_nitrogen}", end=" ")
+                line = f"  {element.type} bond: {element.centeredOn} "
+                line += f"ring: {bond.IsInRing()} N: {is_nitrogen} "
             elif element.type == Chem.StereoType.Atom_Tetrahedral:
-                print(f"  {element.type} atom: {element.centeredOn}", end=" ")
-                print(f"atoms {list(element.controllingAtoms)}", end=" ")
-            print(f"{element.specified} {element.descriptor}")  # type: Chem.StereoDescriptor
+                line = f"  {element.type} atom: {element.centeredOn} "
+                line += f"atoms {list(element.controllingAtoms)} "
+            # element.descriptor: Chem.StereoDescriptor
+            lines.append(f"{line}{element.specified} {element.descriptor}")
+        return "\n".join(lines)
 
-    def report_props(self) -> None:
-        """Report properties"""
-        if self.props:
-            print(f"Properties({len(self.props)}):")
-            fixed_width = max([len(k) for k in self.props]) + 4
-            for k, v in self.props.items():
-                while len(k) <= fixed_width:
-                    k = k + " "
-                print(f"  {k} {v}")
-        else:
-            print(f"Properties: None")
+    def report_props(self) -> str:
+        """Returns a report of properties.
+
+        Examples:
+            >>> print(mol.report_props())
+
+        Returns:
+            str: multi-line report.
+        """
+        if not self.props:
+            return "Properties: None"
+        lines = [f"Properties({len(self.props)}):"]
+        fixed_width = max(len(k) for k in self.props) + 5
+        for k, v in self.props.items():
+            lines.append(f"  {k:<{fixed_width}} {v}")
+        return "\n".join(lines)

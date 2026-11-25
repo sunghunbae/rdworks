@@ -636,13 +636,21 @@ class DescriptiveDraw:
         """
         self.style[name] = {"r": r, "rgba": rgba, "linewidth": linewidth, "fill": fill}
 
-    def show_styles(self) -> None:
-        print(f"{'Name':<16} {'r':<8} {'rgba':<24} {'linewidth':<10} {'fill':<10}")
+    def show_styles(self) -> str:
+        """Returns a table of the available highlight styles.
+
+        Examples:
+            >>> print(DescriptiveDraw(rdmol).show_styles())
+
+        Returns:
+            str: multi-line table.
+        """
+        lines = [f"{'Name':<16} {'r':<8} {'rgba':<24} {'linewidth':<10} {'fill':<10}"]
         for k, v in sorted(self.style.items()):
-            print(
+            lines.append(
                 f"{k:<16} {v['r']:<8.2f} {str(v['rgba']):<24} {v['linewidth']:<10} {v['fill']:<10}"
             )
-        print()
+        return "\n".join(lines)
 
     def draw(
         self,

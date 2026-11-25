@@ -1,7 +1,7 @@
 """Regression tests for logging and exception-handling best practices.
 
 * no bare ``except:`` and no swallowed ``except Exception`` in the package
-* ``print`` only in explicit user-facing report methods
+* no ``print`` in the package; report methods return ``str``
 * the package logger only has a NullHandler and RDKit logging is untouched
 * narrowed handlers still convert RDKit failures into the documented errors
 """
@@ -18,14 +18,8 @@ import pytest
 
 SRC = Path(__file__).resolve().parents[1] / "src" / "rdworks"
 
-# user-facing report methods that still print by design (pending decision)
-PRINT_ALLOWED = {
-    ("microstate.py", "info"),
-    ("mol.py", "report_stereo"),
-    ("mol.py", "report_props"),
-    ("mollibr.py", "unique"),
-    ("view.py", "show_styles"),
-}
+# (module, function) pairs allowed to call print(); report methods return str instead
+PRINT_ALLOWED: set[tuple[str, str]] = set()
 
 
 def _modules():
@@ -51,7 +45,7 @@ def test_no_catch_all_exception_handlers():
     assert offenders == []
 
 
-def test_print_only_in_report_methods():
+def test_no_print_in_package():
     offenders = []
     for rel, tree in _modules():
         funcs = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]
@@ -193,6 +187,63 @@ def test_scaffold_breakup_verbose_logs_and_acyclic(caplog):
         children = breakup(Chem.MolFromSmiles("c1ccc2ccccc2c1CC1CCNCC1"), verbose=True)
     assert children
     assert "breakup parent" in caplog.text
+
+
+def test_mol_reports_return_str(capsys):
+    from rdworks import Mol
+
+    m = Mol("C/C=C/C[C@H](N)O", "m1").qed()
+    stereo = m.report_stereo()
+    props = m.report_props()
+    assert capsys.readouterr().out == ""  # nothing printed
+    assert stereo.splitlines()[0] == "chiral centers = unspecified 0 / total 1"
+    assert "Bond_Double bond: 1 ring: False N: False Specified Bond_Trans" in stereo
+    assert props.splitlines()[0] == f"Properties({len(m.props)}):"
+    # keys padded to a common width (longest key + 5)
+    width = max(len(k) for k in m.props) + 5
+    assert props.splitlines()[1] == f"  {'aka':<{width}} []"
+    assert not props.endswith("\n")
+
+
+def test_microstate_reports_return_str(capsys):
+    from rdworks.microstate import StateNetwork
+
+    sn = StateNetwork()
+    sn.build(smiles="c1ccc(CNc2ncnc3ccccc23)cc1", max_formal_charge=3, tautomer_rule=None)
+    network = sn.info()
+    state = sn.get_initial_state().info(index=0)
+    ensemble = sn.get_state_ensemble().info()
+    assert capsys.readouterr().out == ""
+    assert network == "StateNetwork - nodes: 12 edges: 40"
+    assert state.splitlines()[0] == "[ 0] SMILES: c1ccc(CNc2ncnc3ccccc23)cc1"
+    # ensemble = state reports joined by blank lines, starting with state 0
+    assert ensemble.startswith(state + "\n\n")
+    assert ensemble.count("SMILES:") == 12
+
+
+def test_mollibr_report_duplicates(capsys, caplog):
+    from rdworks import MolLibr
+
+    libr = MolLibr(["CCO", "OCC", "c1ccccc1", "C(O)C"], ["a", "b", "c", "d"])
+    expected = "duplicates:\n  a(2) - b,d\nde-duplicated to 2 molecules"
+    assert libr.unique().report_duplicates() == expected
+    with caplog.at_level(logging.INFO, logger="rdworks.mollibr"):
+        uniq = libr.unique(report=True)
+    assert uniq.count() == 2
+    assert capsys.readouterr().out == ""
+    assert expected in caplog.text
+
+
+def test_show_styles_returns_str(capsys):
+    from rdkit import Chem
+    from rdworks.view import DescriptiveDraw
+
+    dd = DescriptiveDraw(Chem.MolFromSmiles("CCN"))
+    table = dd.show_styles()
+    assert capsys.readouterr().out == ""
+    lines = table.splitlines()
+    assert lines[0].split() == ["Name", "r", "rgba", "linewidth", "fill"]
+    assert len(lines) == len(dd.style) + 1
 
 
 def test_xml_combine_defaults_to_or(tmp_path):

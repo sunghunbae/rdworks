@@ -522,7 +522,8 @@ class MolLibr:
         """Removes duplicates and returns a copy of unique library.
 
         Args:
-            report (bool, optional): whether to report duplicates. Defaults to False.
+            report (bool, optional): whether to log the duplicates report
+                (see `report_duplicates()`) at INFO level. Defaults to False.
 
         Returns:
             Self: a copy of self.
@@ -544,15 +545,26 @@ class MolLibr:
                 U[mol.smiles] = mol
         obj.libr = list(itertools.compress(obj.libr, mask))
         if report:
-            print("duplicates:")
-            for mol in obj.libr:
-                if len(mol.props["aka"]) > 0:
-                    print(
-                        f"  {mol.name}({len(mol.props['aka'])}) - {','.join(mol.props['aka'])}"
-                    )
-            print(f"de-duplicated to {obj.count()} molecules")
+            logger.info("%s", obj.report_duplicates())
 
         return obj
+
+    def report_duplicates(self) -> str:
+        """Returns a report of molecules recorded as duplicates (`aka`), e.g. by `unique()`.
+
+        Examples:
+            >>> print(libr.unique().report_duplicates())
+
+        Returns:
+            str: multi-line report.
+        """
+        lines = ["duplicates:"]
+        for mol in self.libr:
+            aka = mol.props.get("aka", [])
+            if aka:
+                lines.append(f"  {mol.name}({len(aka)}) - {','.join(aka)}")
+        lines.append(f"de-duplicated to {self.count()} molecules")
+        return "\n".join(lines)
 
     def qed(
         self, properties: list[str] = ["QED", "MolWt", "LogP", "TPSA", "HBD"], **kwargs

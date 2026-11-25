@@ -618,26 +618,40 @@ class State:
             self.charge = Chem.GetFormalCharge(self.rdmol)
             self.key = Chem.MolToSmiles(self.rdmol)
 
-    def info(self, index: int | None = None) -> None:
+    def info(self, index: int | None = None) -> str:
+        """Returns a report of the state.
+
+        Examples:
+            >>> print(state.info())
+
+        Args:
+            index (int | None, optional): serial number prefixed to each line. Defaults to None.
+
+        Returns:
+            str: multi-line report.
+        """
         if isinstance(index, int):
             serial = f"[{index:2}] "
         else:
             serial = ""
-        print(f"{serial}SMILES: {self.smiles}")
-        print(f"{serial}Origin: {self.origin}")
-        print(f"{serial}Charge: {self.charge}")
-        print(f"{serial}Energy: {self.energy}")
-        print(f"{serial}Reference pH: {self.ref_ph}")
-        print(f"{serial}Transformation: {self.transformation}")
-        print(f"{serial}Ionizable sites:")
-
+        lines = [
+            f"{serial}SMILES: {self.smiles}",
+            f"{serial}Origin: {self.origin}",
+            f"{serial}Charge: {self.charge}",
+            f"{serial}Energy: {self.energy}",
+            f"{serial}Reference pH: {self.ref_ph}",
+            f"{serial}Transformation: {self.transformation}",
+            f"{serial}Ionizable sites:",
+        ]
         for site in self.sites:
-            print(f"{serial}    atom_idx= {site.atom_idx:2},", end=" ")
-            print(f"atom= {site.atom:>2},", end=" ")
-            print(f"q= {site.q:+2}, hs= {site.hs:1},", end=" ")
-            print(f"pr= {site.pr:1}, de= {site.de:1},", end=" ")
-            print(f"acid_base= {site.acid_base}, name= {site.name}")
-        print()
+            lines.append(
+                f"{serial}    atom_idx= {site.atom_idx:2}, "
+                f"atom= {site.atom:>2}, "
+                f"q= {site.q:+2}, hs= {site.hs:1}, "
+                f"pr= {site.pr:1}, de= {site.de:1}, "
+                f"acid_base= {site.acid_base}, name= {site.name}"
+            )
+        return "\n".join(lines)
 
     def hydrogen_count(self, idx: int) -> int:
         atom = self.rdmolH.GetAtomWithIdx(idx)
@@ -1116,10 +1130,18 @@ class StateEnsemble:
         """Number of states."""
         return len(self.states)
 
-    def info(self) -> None:
-        """Print information of all states."""
-        for i, state in enumerate(self.states):
-            state.info(index=i)
+    def info(self) -> str:
+        """Returns a report of all states, separated by blank lines.
+
+        Examples:
+            >>> print(ensemble.info())
+
+        Returns:
+            str: multi-line report.
+        """
+        return "\n\n".join(
+            state.info(index=i) for i, state in enumerate(self.states)
+        )
 
     def get_charge_groups(self) -> dict[int, list[int]]:
         """Get charge groups
@@ -1578,11 +1600,16 @@ class StateNetwork:
         """Get the initial state."""
         return self.initial_state
 
-    def info(self) -> None:
-        """Print information of the network."""
-        print(
-            f"StateNetwork - nodes: {self.get_num_nodes()} edeges: {self.get_num_edges()}"
-        )
+    def info(self) -> str:
+        """Returns a one-line summary of the network.
+
+        Examples:
+            >>> print(network.info())
+
+        Returns:
+            str: summary.
+        """
+        return f"StateNetwork - nodes: {self.get_num_nodes()} edges: {self.get_num_edges()}"
 
     def size(self) -> int:
         """Number of unique states in the network."""

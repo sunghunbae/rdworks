@@ -1,18 +1,18 @@
 """Torsion utilities: rotatable-bond detection, torsion fragmentation, and torsion scans.
 
 Submodules:
-    atoms:    rotatable-bond (dihedral a-b-c-d) detection
-    fragment: torsion fragment creation around a rotatable bond
-    scan:     torsion energy scans; they take an `rdworks.Conf` and store potential
-              energy profiles in `conf.props['torsion']` (`Conf` methods of the same
-              names delegate here)
-    plot:     plot data from torsion scan results
+    atom_indices:  rotatable-bond (dihedral a-b-c-d) detection
+    fragment:      torsion fragment creation around a rotatable bond
+    sp_relaxation: torsion energy scans; they take an `rdworks.Conf` and store potential
+                   energy profiles in `conf.props['torsion']` (`Conf` methods of the
+                   same names delegate here)
+    plot:          plot data from torsion scan results
 
 The public functions are re-exported here, so `from rdworks.torsion import ...`
 keeps working as before the split.
 """
 
-from rdworks.torsion.atoms import get_torsion_angle_atom_indices
+from rdworks.torsion.atom_indices import get_torsion_angle_atom_indices
 from rdworks.torsion.fragment import (
     create_fragment_on_bonds,
     create_torsion_fragment,
@@ -23,7 +23,7 @@ from rdworks.torsion.fragment import (
     get_fragment_idx,
     get_fragment_idx_with_mcs,
 )
-from rdworks.torsion.scan import (
+from rdworks.torsion.sp_relaxation import (
     calculate_sp_torsion_energies,
     calculate_torsion_energies,
     calculate_torsion_energies_batch,
@@ -34,7 +34,7 @@ from rdworks.torsion.scan import (
 from rdworks.torsion.plot import get_torsion_plot_data
 
 __all__ = [
-    # atoms
+    # atom_indices
     "get_torsion_angle_atom_indices",
     # fragment
     "create_fragment_on_bonds",
@@ -45,7 +45,7 @@ __all__ = [
     "get_bond_distance",
     "get_fragment_idx",
     "get_fragment_idx_with_mcs",
-    # scan
+    # sp_relaxation
     "calculate_sp_torsion_energies",
     "calculate_torsion_energies",
     "calculate_torsion_energies_batch",

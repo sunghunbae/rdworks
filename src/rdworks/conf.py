@@ -86,8 +86,8 @@ class Conf:
                 self.rdmol = Chem.MolFromMolBlock(
                     molecule, sanitize=False, removeHs=False, strictParsing=True
                 )
-            except Exception:
-                self.rdmol = None
+            except (TypeError, ValueError, RuntimeError) as e:
+                raise ValueError("Conf() Error: invalid MolBlock string") from e
             if self.rdmol is None:
                 raise ValueError("Conf() Error: invalid MolBlock string")
 
@@ -494,8 +494,10 @@ class Conf:
 
                 return self
 
-            except:
-                raise RuntimeError("ASE calculator error")
+            except Exception as e:
+                # third-party ASE calculators may raise any exception type;
+                # wrap it but keep the original cause for debugging
+                raise RuntimeError("ASE calculator error") from e
 
     def optimize(
         self,
@@ -549,7 +551,7 @@ class Conf:
                     self.rdmol = results.geometry
                     PE_final = results.PE
                     retcode = 0
-                except:
+                except AttributeError:
                     retcode = 1
 
             elif (

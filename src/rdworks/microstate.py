@@ -1500,14 +1500,18 @@ class StateNetwork:
                     )
                     queue.append(neighbor_state)
             if verbose:
-                print(
-                    f"Iteration {iter:2}: {len(self.visited_states):2} microstates found"
+                logger.info(
+                    "Iteration %2d: %2d microstates found",
+                    iter,
+                    len(self.visited_states),
                 )
 
         if verbose:
-            print(f"\nNetwork construction complete!")
-            print(f"Total microstates: {len(self.graph.nodes())}")
-            print(f"Total transformations: {len(self.graph.edges())}")
+            logger.info(
+                "Network construction complete: %d microstates, %d transformations",
+                len(self.graph.nodes()),
+                len(self.graph.edges()),
+            )
 
         return self
 

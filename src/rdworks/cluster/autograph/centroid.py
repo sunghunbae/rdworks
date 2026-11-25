@@ -1,5 +1,9 @@
+import logging
+
 import pandas as pd
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 def centroid_medoid(communityAssignment, rmsdMatrix) -> list:
@@ -104,6 +108,6 @@ def centroid_autograph(
             rmsdMatrix * rmsdMatrix < np.sqrt(-np.log(threshold)),
         )  # add filtered rmsd matrix
     else:
-        print(
+        logger.warning(
             'centroid criterion not recognized. Use keywords "degree", "eccentricity", or "betweenness" for centroid_selection or provide an energy output to base the selection'
         )

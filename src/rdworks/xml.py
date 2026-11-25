@@ -227,10 +227,7 @@ def parse_xml(path: os.PathLike) -> Tuple:
     tree = ET.parse(path)
     root = tree.getroot()
     terms = []
-    try:
-        combine = root.attrib["combine"].upper()
-    except:
-        combine = "OR"  # default
+    combine = root.attrib.get("combine", "OR").upper()  # default: OR
     for child in root:
         name = child.attrib["name"]
         if child.tag == "substructure":

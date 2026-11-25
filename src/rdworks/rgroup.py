@@ -7,6 +7,7 @@ Attributes:
 """
 
 import json
+import logging
 from collections import defaultdict
 from functools import lru_cache
 from importlib.resources import files
@@ -22,6 +23,8 @@ from rdkit.Chem.rdchem import EditableMol
 from rdworks.mol import Mol
 from rdworks.mollibr import MolLibr
 from rdworks.std import desalt_smiles
+
+logger = logging.getLogger(__name__)
 
 
 def fragmented(
@@ -103,7 +106,8 @@ def connect_core_and_chains(combi_smiles: str) -> Mol | None:
         atom.SetAtomMapNum(0)
     try:
         return Mol(Chem.RemoveHs(bonded_mol))  # returns a new molecule
-    except:
+    except (TypeError, ValueError, RuntimeError):
+        # e.g. AtomValenceException (a ValueError) for an impossible connection
         return None
 
 
@@ -161,7 +165,9 @@ def expand_rgroup(
     # combinations that cannot be connected (e.g., invalid valence) return None
     n_failed = sum(mol is None for mol in obj.libr)
     if n_failed:
-        print(f"Expand R-Group: {n_failed} combination(s) could not be connected")
+        logger.warning(
+            "Expand R-Group: %d combination(s) could not be connected", n_failed
+        )
     obj.libr = [mol for mol in obj.libr if mol is not None]
     return obj.rename(prefix=prefix, start=start)
 

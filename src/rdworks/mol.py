@@ -159,40 +159,38 @@ class Mol:
                 else:
                     self.rdmol = Chem.MolFromSmiles(molecule)
                     self.smiles = Chem.MolToSmiles(self.rdmol)
-            except:
-                raise ValueError(f"Mol() Error: invalid SMILES {molecule}")
+            except (TypeError, ValueError, RuntimeError) as e:
+                # invalid SMILES -> MolFromSmiles returns None -> TypeError downstream
+                raise ValueError(f"Mol() Error: invalid SMILES {molecule}") from e
 
         elif isinstance(molecule, Chem.Mol):  # 2-D or 3-D Chem.Mol
             try:
                 self.rdmol, _ = clean_2d(molecule, reset_isotope, remove_H)
                 self.smiles = Chem.MolToSmiles(self.rdmol)
                 self.confs = [Conf(x) for x in _]
-            except:
-                raise ValueError(f"Mol() Error: invalid Chem.Mol object")
+            except (TypeError, ValueError, RuntimeError) as e:
+                raise ValueError("Mol() Error: invalid Chem.Mol object") from e
 
         elif isinstance(molecule, Conf):  # 3-D input
             try:
                 self.rdmol, _ = clean_2d(molecule.rdmol, reset_isotope, remove_H)
                 self.smiles = Chem.MolToSmiles(self.rdmol)
                 self.confs = [molecule]
-            except:
-                raise ValueError(f"Mol() Error: invalid Conf object")
+            except (TypeError, ValueError, RuntimeError) as e:
+                raise ValueError("Mol() Error: invalid Conf object") from e
 
         try:
             if std:
                 self.rdmol = standardize(self.rdmol)
                 self.smiles = Chem.MolToSmiles(self.rdmol)
-        except:
-            raise RuntimeError("Mol() Error: standardization")
+        except (TypeError, ValueError, RuntimeError) as e:
+            raise RuntimeError("Mol() Error: standardization") from e
 
         assert self.smiles and self.rdmol, "Mol() Error: invalid molecule"
 
         rdDepictor.Compute2DCoords(self.rdmol)
 
-        try:
-            self.name = "" if name is None else str(name)
-        except:
-            self.name = "untitled"
+        self.name = "" if name is None else str(name)
 
         self.rdmol.SetProp("_Name", self.name)  # _Name can't be None
         self.InChIKey = generate_inchi_key(self.rdmol)
@@ -461,8 +459,8 @@ class Mol:
             self.rdmol, _ = clean_2d(molecule, reset_isotope=True, remove_H=True)
             self.smiles = Chem.MolToSmiles(self.rdmol)
             self.confs = [Conf(x) for x in _]
-        except:
-            raise ValueError(f"Mol() Error: invalid MolBlock string")
+        except (TypeError, ValueError, RuntimeError) as e:
+            raise ValueError("Mol() Error: invalid MolBlock string") from e
 
         assert self.smiles and self.rdmol, "Mol() Error: invalid molecule"
 
@@ -470,10 +468,7 @@ class Mol:
 
         rdDepictor.Compute2DCoords(self.rdmol)
 
-        try:
-            self.name = str(name)
-        except:
-            self.name = "untitled"
+        self.name = str(name)
 
         self.rdmol.SetProp("_Name", self.name)  # _Name can't be None
         self.InChIKey = generate_inchi_key(self.rdmol)
@@ -577,9 +572,10 @@ class Mol:
         props_dict = {}
         for k in properties:
             try:
-                props_dict[k] = rd_descriptor_f[k](self.rdmol)
-            except:
-                raise KeyError(f"qed() Error: unknown property {k}")
+                descriptor_fn = rd_descriptor_f[k]
+            except KeyError:
+                raise KeyError(f"qed() Error: unknown property {k}") from None
+            props_dict[k] = descriptor_fn(self.rdmol)
         self.props.update(props_dict)
 
         return self
@@ -1744,13 +1740,18 @@ class Mol:
             if terms.startswith("~") or terms.startswith("!"):
                 terms = terms[1:]  # strip only the leading inversion marker
                 invert = invert ^ True
+            path = Path(terms)  # test if terms points to a xml file
             try:
-                path = Path(terms)  # test if terms points to a xml file
-                assert path.is_file()
-            except:
+                is_file = path.is_file()
+            except OSError:  # e.g. ENAMETOOLONG for a long SMARTS string
+                is_file = False
+            if not is_file:
                 path = get_predefined_xml(terms)
         else:
-            print(list_predefined_xml())
+            logger.warning(
+                "is_matching(): terms must be a str or Path; predefined terms:\n%s",
+                list_predefined_xml(),
+            )
             return False
 
         (lterms, combine) = parse_xml(path)

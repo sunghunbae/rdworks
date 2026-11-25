@@ -1,6 +1,10 @@
 # Change Log
 
 ## Unreleased
+- changed `import rdworks` to only attach a `logging.NullHandler` to the `rdworks` logger (no handler, level or format is set) and to no longer change RDKit's log level; configure output with `logging.basicConfig(level=logging.INFO)` and silence RDKit with `RDLogger.DisableLog("rdApp.*")`
+- replaced all bare `except:` and swallowed `except Exception` blocks with specific exception types (original errors are chained with `from e`); unrelated programming errors are no longer hidden
+- replaced diagnostic `print()` calls with module loggers (`logging.getLogger(__name__)`), including `verbose=True` output of `breakup()` and `StateNetwork.build()` (now `INFO` level)
+- fixed `Mol.qed()` reporting a descriptor calculation error as "unknown property"
 - added pixi workspace and conda package build (`pixi build`) configuration to `pyproject.toml`
 - `complete_stereoisomers()` and `complete_tautomers()` live in `rdworks.complete`, which imports `Mol` and `MolLibr` at module level; `rdworks.stereoisomers` and `rdworks.tautomers` keep only the RDKit-level helpers (`can_have_stereo()`, the enumerators) plus lazy aliases, so `from rdworks.stereoisomers import complete_stereoisomers` and `from rdworks.tautomers import complete_tautomers` still work
 - fixed `can_have_stereo()` missing E/Z double bonds (e.g. 2-butene, imines, enols), which undercounted `complete_tautomers()` results

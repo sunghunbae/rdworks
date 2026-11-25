@@ -1,4 +1,5 @@
 import copy
+import logging
 import html
 import itertools
 import pandas as pd
@@ -22,6 +23,8 @@ from rdworks.mol import Mol
 import rdworks.writers as rwio  # shared writers (to_xyz, to_sdf, to_svg, ...)
 from rdworks.xml import list_predefined_xml
 from rdworks.fingerprint import calculate_fingerprints
+
+logger = logging.getLogger(__name__)
 
 
 class MolLibr:
@@ -602,7 +605,9 @@ class MolLibr:
             Self: a copy of self.
         """
         if not terms:
-            print(list_predefined_xml())
+            logger.warning(
+                "drop(): no terms given; predefined terms:\n%s", list_predefined_xml()
+            )
             return self
 
         obj = self.copy().compute(**kwargs)

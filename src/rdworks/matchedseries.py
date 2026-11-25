@@ -1,3 +1,4 @@
+import logging
 import os
 import pathlib
 import copy
@@ -14,6 +15,8 @@ from rdkit.Chem import Draw, AllChem, rdMMPA, rdDepictor
 from rdworks.descriptor import rd_descriptor_f
 from rdworks.mollibr import MolLibr
 from rdworks.view import render_svg
+
+logger = logging.getLogger(__name__)
 
 
 def get_attachment_orientation(mol: Chem.Mol, dummy_atom_idx: int | None = None):
@@ -53,7 +56,7 @@ def get_attachment_orientation(mol: Chem.Mol, dummy_atom_idx: int | None = None)
         # Get the neighboring atom (should be exactly one for attachment point)
         neighbors = list(dummy_atom.GetNeighbors())
         if len(neighbors) != 1:
-            print(f"Warning: Dummy atom {dummy_idx} has {len(neighbors)} neighbors")
+            logger.warning("Dummy atom %d has %d neighbors", dummy_idx, len(neighbors))
             continue
 
         neighbor_idx = neighbors[0].GetIdx()
@@ -114,14 +117,14 @@ def orient_rgroup_to_attachment(
     # Get orientations
     scaffold_dummy_atom_idx = list(scaffold_orientations.keys())
     if len(scaffold_dummy_atom_idx) == 0:
-        print("Error: No dummy atoms found in scaffold molecule")
+        logger.error("No dummy atoms found in scaffold molecule")
         return rgroup_mol
 
     rgroup_orientations = get_attachment_orientation(rgroup_mol)
 
     rgroup_dummy_atom_idx = list(rgroup_orientations.keys())
     if len(rgroup_dummy_atom_idx) == 0:
-        print("Error: No dummy atoms found in R-group molecule")
+        logger.error("No dummy atoms found in R-group molecule")
         return rgroup_mol
 
     scaffold_info = scaffold_orientations[scaffold_dummy_atom_idx[0]]
@@ -479,8 +482,8 @@ class MatchedSeries:
             for _, cut in list_of_frag:
                 try:
                     frag_smiles_1, frag_smiles_2 = cut.split(".")
-                except:
-                    raise RuntimeError(f"{mol.name} fragment_tuple= {cut}")
+                except ValueError as e:  # not exactly two fragments
+                    raise RuntimeError(f"{mol.name} fragment_tuple= {cut}") from e
                 n1 = Chem.MolFromSmiles(frag_smiles_1).GetNumHeavyAtoms()
                 n2 = Chem.MolFromSmiles(frag_smiles_2).GetNumHeavyAtoms()
                 # split scaffold core and rgroup symmetrically
@@ -553,8 +556,9 @@ class MatchedSeries:
             for i, coord in enumerate(self.template_coords2D):
                 coordDict[matched[i]] = coord
             AllChem.Compute2DCoords(rdmol_2d, coordMap=coordDict)
-        except:
-            pass
+        except (IndexError, TypeError, ValueError, RuntimeError) as e:
+            # no template / partial match: keep the default 2D coordinates
+            logger.debug("template alignment skipped: %s", e)
         return rdmol_2d
 
     def report(

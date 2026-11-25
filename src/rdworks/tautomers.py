@@ -11,6 +11,8 @@ https://github.com/xundrug/moltaut
 
 from __future__ import annotations
 
+import logging
+
 from importlib.resources import files, as_file
 
 from collections import defaultdict
@@ -18,6 +20,8 @@ from collections import defaultdict
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem.MolStandardize import rdMolStandardize
+
+logger = logging.getLogger(__name__)
 
 
 class RdkTautomers:
@@ -117,8 +121,8 @@ class ComprehensiveTautomers:
                 continue
             try:
                 smi = Chem.MolToSmiles(_, kekuleSmiles=True)
-            except:
-                print("Kekulize error:", Chem.MolToSmiles(_))
+            except (ValueError, RuntimeError):  # KekulizeException is a ValueError
+                logger.warning("Kekulize error: %s", Chem.MolToSmiles(_))
                 continue
             _kekulized.append(Chem.MolFromSmiles(smi, ComprehensiveTautomers.ps))
         return _kekulized

@@ -117,13 +117,9 @@ def read_csv(
     """
     path = validate_path(path)
     df = pd.read_csv(path)
-    try:
-        assert smiles in list(df.columns)
-    except:
+    if smiles not in df.columns:
         raise ValueError(f"Cannot find SMILES column (`smiles=`) {smiles}")
-    try:
-        assert name in list(df.columns)
-    except:
+    if name not in df.columns:
         raise ValueError(f"Cannot find NAME column (`name=`) {name}")
 
     largs = [
@@ -160,9 +156,7 @@ def merge_csv(libr: MolLibr, path: str | Path, on: str = "name") -> MolLibr:
     """
     path = validate_path(path)
     df = pd.read_csv(path)
-    try:
-        assert on in list(df.columns)
-    except:
+    if on not in df.columns:
         raise ValueError(f"Cannot find ON column (`on=`) {on}")
     # A list of dictionaries, where each dictionary represents a row,
     # with column names as keys and cell values as values:
@@ -201,13 +195,9 @@ def read_dataframe(
     """
     if not isinstance(df, pd.DataFrame):
         raise TypeError(f"Expects a pandas.DataFrame object")
-    try:
-        assert smiles in list(df.columns)
-    except:
+    if smiles not in df.columns:
         raise ValueError(f"Cannot find SMILES column (`smiles=`) {smiles}")
-    try:
-        assert name in list(df.columns)
-    except:
+    if name not in df.columns:
         raise ValueError(f"Cannot find NAME column (`name=`) {name}")
 
     return MolLibr(list(df[smiles]), list(df[name]), std=std)

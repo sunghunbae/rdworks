@@ -116,12 +116,16 @@ class GFN2xTB:
                     text=True,
                     encoding="utf-8",
                 )
-                assert proc.returncode == 0
+            ok = proc.returncode == 0
 
+        except (OSError, TypeError, subprocess.SubprocessError):
+            # missing/unusable executable (TypeError: xtb_exec is None)
+            ok = False
+
+        if ok:
             return True
-
-        except:
-            print(
+        else:
+            logger.warning(
                 """                          
 Conda installed xTB has the Fortran runtime error in geometry optimization. 
 Please install xtb using the compiled binary:
@@ -820,11 +824,15 @@ $ cp -r xtb-dist/share      /usr/local/ """
                 encoding="utf-8",
             )
 
+            # output files: xtb_esp.cosmo, xtb_esp.dat, xtb_esp_profile.dat
+            xtb_esp_dat = workdir / "xtb_esp.dat"  # expected output
+            if proc.returncode != 0 or not xtb_esp_dat.is_file():
+                logger.error(
+                    "Failed to generate ESP volumetric data "
+                    f"(xtb returncode={proc.returncode}, {xtb_esp_dat} missing or not created)."
+                )
+                return ""
             try:
-                # output files: xtb_esp.cosmo, xtb_esp.dat, xtb_esp_profile.dat
-                xtb_esp_dat = workdir / "xtb_esp.dat"  # expected output
-                assert proc.returncode == 0
-                assert xtb_esp_dat.is_file()
                 surface_points = GFN2xTB.read_esp_data(xtb_esp_dat)
                 if verbose:
                     logger.info(f"Loaded {len(surface_points)} surface points")
@@ -842,6 +850,6 @@ $ cp -r xtb-dist/share      /usr/local/ """
                     surface_points, grid_points, method, max_distance
                 )
                 return self.to_cube(grid_dims, origin, grid_vectors, grid_esp)
-            except Exception as e:
+            except (OSError, ValueError, IndexError) as e:
                 logger.error(f"Failed to generate ESP volumetric data ({e}).")
                 return ""

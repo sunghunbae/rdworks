@@ -3,6 +3,7 @@ This module provides functions to break a molecule into scaffolds.
 """
 
 import collections
+import logging
 import operator
 import itertools
 
@@ -14,6 +15,8 @@ from rdkit.Chem.Scaffolds import MurckoScaffold
 from rdkit.Chem import BRICS, AllChem
 
 from rdworks.std import desalt_smiles
+
+logger = logging.getLogger(__name__)
 
 
 def remove_exocyclic(rdmol: Chem.Mol) -> Chem.Mol:
@@ -80,7 +83,7 @@ def get_attached_linkers(mol: Chem.Mol) -> Any:
     for (aj, ai), (ak, aii) in list(itertools.combinations(non_ring_atoms_attached, 2)):
         try:
             jk = Chem.GetShortestPath(mol, aj, ak)  # tuple
-        except:
+        except (TypeError, ValueError, RuntimeError):
             continue
         # all atoms along the path should be non ring atoms
         if sum([1 for i in jk if i not in non_ring_atoms]) == 0:
@@ -123,6 +126,8 @@ def breakup(
             # parent molecule reflects the SMILES
             # all children will be affected by this
             parent = Chem.MolFromSmiles(smiles)
+            if parent is None:
+                return []
 
             rings = parent.GetRingInfo().AtomRings()
             nr = len(rings)
@@ -133,16 +138,12 @@ def breakup(
                 return []
 
             if verbose:
-                print(
-                    (
-                        nr,
-                        smiles,
-                    )
-                )
+                logger.info("breakup parent: rings=%d smiles=%s", nr, smiles)
 
             parents = [(parent, smiles, nr, rings, priority)]
 
-        except:
+        except (TypeError, ValueError, RuntimeError):
+            # invalid input molecule (e.g. None or failed sanitization)
             return []
 
     children = []
@@ -295,13 +296,14 @@ def breakup(
                 child_smiles = Chem.MolToSmiles(
                     child, canonical=True, isomericSmiles=False
                 )
-                assert "." not in child_smiles
-            except:
+            except (TypeError, ValueError, RuntimeError):
+                continue
+            if "." in child_smiles:
                 continue
 
             try:
                 Chem.SanitizeMol(child)
-            except:
+            except (ValueError, RuntimeError):  # MolSanitizeException is a ValueError
                 continue
 
             try:
@@ -310,10 +312,10 @@ def breakup(
                 child_smiles = Chem.MolToSmiles(
                     child, canonical=True, isomericSmiles=False
                 )
-                assert child_smiles
-                # keep only non-redundant child
-                assert sum([1 for c in children if c[1] == child_smiles]) == 0
-            except:
+            except (TypeError, ValueError, RuntimeError):
+                continue
+            # keep only non-empty, non-redundant child
+            if not child_smiles or any(c[1] == child_smiles for c in children):
                 continue
 
             child_getRings = child.GetRingInfo()
@@ -389,17 +391,15 @@ def breakup(
             # Rule 8 - remove rings with the least number of heteroatoms first
             # Rule 9 - if the number of heteroatoms is equal,
             #          the priority of heteroatoms to retain is N > O > S
-            try:
-                child_ring_hetatom = max(
-                    [
-                        ord(child.GetAtomWithIdx(ai).GetSymbol())
-                        for child_ring in child_rings
-                        for ai in child_ring
-                        if child.GetAtomWithIdx(ai).GetSymbol() in ["N", "O", "S"]
-                    ]
-                )
-            except:
-                child_ring_hetatom = ord("X")
+            child_ring_hetatom = max(
+                (
+                    ord(child.GetAtomWithIdx(ai).GetSymbol())
+                    for child_ring in child_rings
+                    for ai in child_ring
+                    if child.GetAtomWithIdx(ai).GetSymbol() in ["N", "O", "S"]
+                ),
+                default=ord("X"),
+            )
 
             children.append(
                 (
@@ -426,8 +426,7 @@ def breakup(
         children = sorted(children, key=operator.itemgetter(4), reverse=True)
         if verbose:
             for d in children:
-                print(d[2], d[1], d[-1])
-            print("-" * 40)
+                logger.info("breakup child: %s %s %s", d[2], d[1], d[-1])
         # limit the number of children if needed
         # maxChildren = None --> scaffold network methods
         # maxChildren = 1    --> scaffold tree methods

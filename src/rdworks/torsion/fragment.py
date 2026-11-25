@@ -8,50 +8,7 @@ from rdkit import Chem
 from rdworks.xtb.wrapper import GFN2xTB
 
 
-def find_atoms_at_bond_distance(
-    rdmol: Chem.Mol, start_atom_idx: int, distance: int
-) -> list[int]:
-    """Finds atoms at a specific bond distance from a starting atom.
-
-    The distance is the length of any simple path (no repeated atoms) from the
-    starting atom, not only the shortest path. Atoms reachable by more than one
-    path of the given length appear more than once.
-
-    Args:
-        rdmol (Chem.Mol): molecule.
-        start_atom_idx (int): index of the starting atom.
-        distance (int): number of bonds from the starting atom.
-
-    Returns:
-        list[int]: atom indices at the specified distance (may contain duplicates).
-    """
-    assert start_atom_idx < rdmol.GetNumAtoms(), "start_atom_idx out of range."
-
-    found_atoms = []
-    visited = set()
-
-    def dfs(curr_atom_idx: int, curr_bond_dist: int) -> None:
-        """Depth-first search over simple paths, recording atoms at `distance`."""
-        if curr_bond_dist == distance:
-            found_atoms.append(curr_atom_idx)
-            return
-
-        visited.add(curr_atom_idx)
-        curr_atom = rdmol.GetAtomWithIdx(curr_atom_idx)
-        for next_atom in curr_atom.GetNeighbors():
-            next_atom_idx = next_atom.GetIdx()
-            if next_atom_idx not in visited:
-                dfs(next_atom_idx, curr_bond_dist + 1)
-
-        # Backtrack
-        visited.remove(curr_atom_idx)
-
-    dfs(start_atom_idx, 0)
-
-    return found_atoms
-
-
-def get_bond_distance(rdmol: Chem.Mol, start_atom_idx: int) -> dict:
+def _get_bond_distance(rdmol: Chem.Mol, start_atom_idx: int) -> dict:
     """Get bond distances of all atoms from a given atom.
 
     Distances are lengths of simple paths (no repeated atoms), not only shortest
@@ -91,7 +48,7 @@ def get_bond_distance(rdmol: Chem.Mol, start_atom_idx: int) -> dict:
     return bond_distance
 
 
-def find_bonds_to_prune(
+def _find_bonds_to_prune(
     rdmol: Chem.Mol,
     torsion_indices: tuple,
     bond_dist_threshold: int = 4,
@@ -137,8 +94,8 @@ def find_bonds_to_prune(
 
     (i, j, k, l) = torsion_indices[:4]
 
-    dist_from_j = get_bond_distance(rdmol, j)
-    dist_from_k = get_bond_distance(rdmol, k)
+    dist_from_j = _get_bond_distance(rdmol, j)
+    dist_from_k = _get_bond_distance(rdmol, k)
 
     # sum(,[]) flattens a list of list
     forbidden = sum([v for d, v in dist_from_j.items() if d < bond_dist_threshold], [])
@@ -217,25 +174,12 @@ def find_bonds_to_prune(
     return found_bonds
 
 
-def get_fragment_idx(parent: Chem.Mol, indices: tuple, fragment: Chem.Mol) -> tuple:
+def _get_fragment_idx(parent: Chem.Mol, indices: tuple, fragment: Chem.Mol) -> tuple:
     """Get fragment atom indices corresponding to given parent indices.
 
     It uses 3D coordinates to find matching atoms between parent and fragment,
     so the fragment must keep the parent coordinates unchanged.
-    It is much faster than the MCS-based method `get_fragment_idx_with_mcs()`.
-    For example, below are the elapsed times for 12 torsion angles of atorvastatin:
-            0 elapsed=0.0006455129478126764 sec.
-            1 elapsed=0.0005964740412309766
-            2 elapsed=0.0005442029796540737
-            3 elapsed=0.000652436981908977
-            4 elapsed=0.0006737819639965892
-            5 elapsed=0.0004481689538806677
-            6 elapsed=0.00035582599230110645
-            7 elapsed=0.0003812289796769619
-            8 elapsed=0.000359484925866127
-            9 elapsed=0.0002818549983203411
-            10 elapsed=0.000247497926466167
-            11 elapsed=0.0003651580773293972
+    It is much faster than the MCS-based method `_get_fragment_idx_with_mcs()`.
 
     Args:
         parent (Chem.Mol): rdkit Chem.Mol object.
@@ -254,76 +198,13 @@ def get_fragment_idx(parent: Chem.Mol, indices: tuple, fragment: Chem.Mol) -> tu
     )
     if len(frag_indices) != len(indices):
         raise ValueError(
-            f"get_fragment_idx() Error: cannot map parent indices {indices} to the fragment"
+            f"_get_fragment_idx() Error: cannot map parent indices {indices} to the fragment"
         )
 
     return frag_indices
 
 
-def get_fragment_idx_with_mcs(
-    parent: Chem.Mol, indices: tuple, fragment: Chem.Mol
-) -> tuple:
-    """Get fragment atom indices corresponding to given parent indices.
-
-    Warning:
-        It uses MCS and can be extremely slow sometimes.
-        For example, below are the elapsed times for 12 torsion angles of atorvastatin:
-            0 elapsed=5.525973221054301 sec. **
-            1 elapsed=1.9143556850031018 *
-            2 elapsed=3.145250838017091 *
-            3 elapsed=9.390580283012241 **
-            4 elapsed=89.97735002799891 ***
-            5 elapsed=0.19022215204313397
-            6 elapsed=0.013428106089122593
-            7 elapsed=0.023345661000348628
-            8 elapsed=0.023358764010481536
-            9 elapsed=0.0007965450640767813
-            10 elapsed=0.0008196790004149079
-            11 elapsed=0.04075543500948697
-
-    Args:
-        parent (Chem.Mol): rdkit Chem.Mol object.
-        indices (tuple): parent atom indices to map within the MCS.
-        fragment (Chem.Mol): fragment originated from the parent.
-
-    Returns:
-        tuple[int, ...]: fragment atom indices in the same order as `indices`.
-    """
-    mcs_result = Chem.rdFMCS.FindMCS([parent, fragment])
-    mcs_mol = Chem.MolFromSmarts(mcs_result.smartsString)
-
-    parent_matches = parent.GetSubstructMatches(mcs_mol)
-    frag_matches = fragment.GetSubstructMatches(mcs_mol)
-
-    indices_idx = None
-    for parent_matched_indices in parent_matches:
-        # It is possible to have more than one matches (i.e. methyl rotation).
-        # However, even if there are more than one matches, the parent indices
-        # should be the same.
-        if indices_idx is None:
-            indices_idx = {x: parent_matched_indices.index(x) for x in indices}
-        else:
-            assert all(
-                [indices_idx[x] == parent_matched_indices.index(x) for x in indices]
-            )
-
-    indices_map = None
-    for frag_matched_indices in frag_matches:
-        # it is possible to have more than one matches (i.e. methyl rotation)
-        if indices_map is None:
-            indices_map = {x: frag_matched_indices[indices_idx[x]] for x in indices}
-        else:
-            assert all(
-                [
-                    indices_map[x] == frag_matched_indices[indices_idx[x]]
-                    for x in indices
-                ]
-            )
-
-    return tuple([indices_map[x] for x in indices])
-
-
-def create_fragment_on_bonds(
+def _create_fragment_on_bonds(
     rdmol: Chem.Mol, bonds: dict, cap: bool = True
 ) -> Chem.Mol | None:
     """Create a fragment that preserves defined atoms.
@@ -387,7 +268,7 @@ def create_torsion_fragment(
     """
     (i, j, k, l) = torsion_indices[:4]
 
-    candidates = find_bonds_to_prune(rdmol, torsion_indices)
+    candidates = _find_bonds_to_prune(rdmol, torsion_indices)
 
     if not candidates:
         # no fragmentation
@@ -403,13 +284,13 @@ def create_torsion_fragment(
             "create_torsion_fragment() Error: no wbo for parent"
         )
         for bond_idx, (p, q) in candidates.items():
-            frag_single_break = create_fragment_on_bonds(rdmol, {bond_idx: (p, q)})
+            frag_single_break = _create_fragment_on_bonds(rdmol, {bond_idx: (p, q)})
             fragment = GFN2xTB(frag_single_break).singlepoint()
             assert hasattr(fragment, "wbo"), (
                 "create_torsion_fragment() Error: no wbo for fragment"
             )
             # WBO difference at the torsion angle bond
-            frag_jk = get_fragment_idx(rdmol, jk, frag_single_break)
+            frag_jk = _get_fragment_idx(rdmol, jk, frag_single_break)
             frag_jk = tuple(sorted(frag_jk))
             if abs(fragment.wbo[frag_jk] - parent.wbo[jk]) < wbo_tolerance:
                 wbo_passed_candidates[bond_idx] = (p, q)
@@ -417,73 +298,11 @@ def create_torsion_fragment(
         if not wbo_passed_candidates:
             # every candidate disrupts the torsion bond (WBO): no fragmentation
             return (rdmol, tuple(torsion_indices[:4]), False, WBO_filtered)
-        frag_multi_breaks = create_fragment_on_bonds(rdmol, wbo_passed_candidates)
+        frag_multi_breaks = _create_fragment_on_bonds(rdmol, wbo_passed_candidates)
     else:
         # skip WBO filtering
-        frag_multi_breaks = create_fragment_on_bonds(rdmol, candidates)
+        frag_multi_breaks = _create_fragment_on_bonds(rdmol, candidates)
 
-    frag_indices = get_fragment_idx(rdmol, (i, j, k, l), frag_multi_breaks)
+    frag_indices = _get_fragment_idx(rdmol, (i, j, k, l), frag_multi_breaks)
 
     return (frag_multi_breaks, frag_indices, True, WBO_filtered)
-
-
-def find_shortest_path_excluding_torsion(
-    rdmol: Chem.Mol, i: int, j: int, k: int, l: int
-) -> list | None:
-    """Find the shortest path between atoms i and l that avoids the torsion bonds i-j, j-k, k-l.
-
-    Uses breadth-first search. A path exists only if i and l are connected
-    through a ring or another route.
-
-    Args:
-        rdmol (Chem.Mol): molecule.
-        i (int): first atom index of the torsion.
-        j (int): second atom index of the torsion.
-        k (int): third atom index of the torsion.
-        l (int): fourth atom index of the torsion.
-
-    Returns:
-        list[int] | None: atom indices from i to l, or None if no alternative path exists.
-    """
-    # Get the bonds to exclude (the torsion path)
-    excluded_bonds = set()
-    bond_ij = rdmol.GetBondBetweenAtoms(i, j)
-    bond_jk = rdmol.GetBondBetweenAtoms(j, k)
-    bond_kl = rdmol.GetBondBetweenAtoms(k, l)
-
-    if bond_ij:
-        excluded_bonds.add(bond_ij.GetIdx())
-    if bond_jk:
-        excluded_bonds.add(bond_jk.GetIdx())
-    if bond_kl:
-        excluded_bonds.add(bond_kl.GetIdx())
-
-    # BFS to find shortest path from i to l
-    queue = deque([(i, [i])])  # (current_atom, path)
-    visited = {i}
-
-    while queue:
-        current, path = queue.popleft()
-
-        # Check neighbors
-        atom = rdmol.GetAtomWithIdx(current)
-        for neighbor in atom.GetNeighbors():
-            neighbor_idx = neighbor.GetIdx()
-
-            # Get the bond between current and neighbor
-            bond = rdmol.GetBondBetweenAtoms(current, neighbor_idx)
-
-            # Skip if this bond is part of the torsion path
-            if bond and bond.GetIdx() in excluded_bonds:
-                continue
-
-            # Found the target
-            if neighbor_idx == l:
-                return path + [l]
-
-            # Continue BFS
-            if neighbor_idx not in visited:
-                visited.add(neighbor_idx)
-                queue.append((neighbor_idx, path + [neighbor_idx]))
-
-    return None  # No alternative path found

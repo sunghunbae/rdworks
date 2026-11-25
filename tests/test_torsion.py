@@ -54,7 +54,7 @@ def test_torsion_fragment():
     assert wbo_filtered == False
 
 
-def test_torsion_fragment_from_conf():
+def test_torsion_scan_from_conf():
     mol = Mol(
         molecule="CC(C)C1=C(C(=C(N1CC[C@H](C[C@H](CC(=O)O)O)O)C2=CC=C(C=C2)F)C3=CC=CC=C3)C(=O)NC4=CC=CC=C4",
         name="atorvastatin",
@@ -72,9 +72,8 @@ def test_torsion_fragment_from_conf():
     assert frag_created == True
     assert wbo_filtered == True
 
-    ref_conf = ref_conf.calculate_torsion_energies(
-        calculator="MMFF94", torsion_angle_idx=6, interval=15
-    )
+    ref_conf = ref_conf.torsion_scan(
+        calculator="MMFF94", torsion_angle_idx=6, interval=15)
 
     mol2 = Mol(molecule="CC(=O)Nc1ccc(O)cc1", name="acetaminophen.3").make_confs(n=1)
     ref_conf2 = mol2.confs[0]
@@ -90,13 +89,26 @@ def test_torsion_fragment_from_conf():
     assert frag_created == False
     assert wbo_filtered == False
 
-    ref_conf2 = ref_conf2.calculate_torsion_energies(calculator="MMFF94", interval=15)
-    ref_conf3 = ref_conf2.calculate_torsion_energies_one(
-        calculator="MMFF94", indices=frag_ijkl
-    )
+    ref_conf2 = ref_conf2.torsion_scan(
+        calculator="MMFF94", torsion_angle_idx=0, interval=15)
+    
+    # ref_conf_ = ref_conf2.torsion_scan(
+    #     calculator="UFF", torsion_angle_idx=0, interval=15)
+    
+    # ref_conf_ = ref_conf2.torsion_scan(
+    #     calculator="xTB", torsion_angle_idx=0, interval=15)
+
+    # ref_conf_ = ref_conf2.torsion_scan(
+    #     calculator="MMFF94", torsion_angle_idx=6, interval=15)
+
+    ref_conf_ = ref_conf2.torsion_scan(
+        calculator="UFF", torsion_angle_idx=6, interval=15)
+
+    # ref_conf_ = ref_conf2.torsion_scan(
+    #     calculator="xTB", torsion_angle_idx=6, interval=15)
 
 
-def test_torsion_energies():
+def test_torsion_scan_from_mol():
     libr = MolLibr(torsion_dataset_smiles, torsion_dataset_names)
     for mol in libr[:1]:
         mol = (
@@ -106,55 +118,6 @@ def test_torsion_energies():
             .rename()
         )
         mol = mol.optimize_confs(calculator="MMFF94")
-        mol = mol.calculate_torsion_energies(calculator="MMFF94", interval=15)
-        plot_data = mol.to_plot_data_torsion_angle_vs_energy()
-        print(mol.dumps("torsion", decimals=2))
-
-
-def test_torsion_energies_batch():
-    libr = MolLibr(torsion_dataset_smiles, torsion_dataset_names)
-    for mol in libr[:1]:
-        mol = (
-            mol.make_confs()
-            .drop_confs(similar=True, similar_rmsd=0.3)
-            .sort_confs()
-            .rename()
-        )
-        mol = mol.optimize_confs(calculator="MMFF94")
-        mol = mol.calculate_torsion_energies(
-            DummyBatchOptimizer, interval=15, batchsize_atoms=16384
-        )
-        plot_data = mol.to_plot_data_torsion_angle_vs_energy()
-        print(mol.dumps("torsion", decimals=2))
-
-
-def test_sp_torsion_energies():
-    libr = MolLibr(torsion_dataset_smiles, torsion_dataset_names)
-    for mol in libr[:1]:
-        mol = (
-            mol.make_confs()
-            .drop_confs(similar=True, similar_rmsd=0.3)
-            .sort_confs()
-            .rename()
-        )
-        mol = mol.optimize_confs(calculator="MMFF94")
-        mol = mol.calculate_sp_torsion_energies(calculator="MMFF94", interval=15)
-        plot_data = mol.to_plot_data_torsion_angle_vs_energy()
-        print(mol.dumps("torsion", decimals=2))
-
-
-def test_sp_torsion_energies_batch():
-    libr = MolLibr(torsion_dataset_smiles, torsion_dataset_names)
-    for mol in libr[:1]:
-        mol = (
-            mol.make_confs()
-            .drop_confs(similar=True, similar_rmsd=0.3)
-            .sort_confs()
-            .rename()
-        )
-        mol = mol.optimize_confs(calculator="MMFF94")
-        mol = mol.calculate_sp_torsion_energies(
-            DummyBatchSinglePointer, interval=15, batchsize_atoms=16384
-        )
+        mol = mol.torsion_scan(calculator="MMFF94", interval=15)
         plot_data = mol.to_plot_data_torsion_angle_vs_energy()
         print(mol.dumps("torsion", decimals=2))

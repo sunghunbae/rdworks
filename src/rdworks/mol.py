@@ -1438,16 +1438,15 @@ class Mol:
 
         return self
 
-    def calculate_torsion_energies(
+    def torsion_scan(
         self,
         calculator: str | Callable = "MMFF94",
         torsion_angle_idx: int | None = None,
         simplify: bool = True,
-        fmax: float = 0.05,
         interval: float = 20.0,
-        use_converged_only: bool = True,
-        batchsize_atoms: int = 0,
+        fmax: float = 0.05,
         water: str | None = None,
+        use_converged_only: bool = True,        
     ) -> Self:
         """Calculates potential energy profiles for each torsion angle using ASE optimizer.
 
@@ -1460,9 +1459,6 @@ class Mol:
             fmax (float, optional): fmax of ASE optimizer. Defaults to 0.05.
             interval (float, optional): interval of torsion angles in degree. Defaults to 15.0.
             use_converged_only (bool, optional): whether to use only converged data. Defaults to True.
-            batchsize_atoms (int, optional): maximum number of atoms in a single batch.
-                Setting any number smaller than conf.natoms to disable batch optimization.
-                Defaults to 0.
 
         Args for xTB calculator:
             water (str, optional): water solvation model (choose 'gbsa' or 'alpb')
@@ -1479,81 +1475,20 @@ class Mol:
 
         ref_conf = self.confs[0].copy()
 
-        if batchsize_atoms >= ref_conf.natoms:
-            assert not isinstance(calculator, str), (
-                "Batch optimizer is required for batch calculation"
-            )
-
-        ref_conf = ref_conf.calculate_torsion_energies(
-            calculator,
-            torsion_angle_idx,
-            simplify,
-            fmax,
-            interval,
-            use_converged_only,
+        ref_conf = ref_conf.torsion_scan(
+            calculator=calculator,
+            torsion_angle_idx=torsion_angle_idx,
+            simplify=simplify,
+            interval=interval,
+            fmax=fmax,
             water=water,
-            batchsize_atoms=batchsize_atoms,
+            use_converged_only=use_converged_only,
         )
 
         self.props["torsion"] = ref_conf.props["torsion"]
 
         return self
 
-    def calculate_sp_torsion_energies(
-        self,
-        calculator: str | Callable = "MMFF94",
-        torsion_angle_idx: int | None = None,
-        simplify: bool = True,
-        interval: float = 20.0,
-        water: str | None = None,
-        batchsize_atoms: int = 0,
-    ) -> Self:
-        """Calculates potential energy profiles for each torsion angle using ASE optimizer.
-
-        It uses the first conformer as a reference.
-
-        Args:
-            calculator (str | Callable): 'MMFF', 'UFF', 'xTB' or ASE calculator.
-            torsion_angle_idx (int | None): torsion index to calculate. Defaults to None (all).
-            simplify (bool, optional): whether to use fragment surrogate. Defaults to True.
-            interval (float, optional): interval of torsion angles in degree. Defaults to 15.0.
-            batchsize_atoms (int, optional): maximum number of atoms in a single batch.
-                Setting any number smaller than conf.natoms to disable batch optimization.
-                Defaults to 0.
-
-        Args for xTB calculator:
-            water (str, optional): water solvation model (choose 'gbsa', 'alpb', or 'cpcmx')
-                alpb: ALPB solvation model (Analytical Linearized Poisson-Boltzmann).
-                gbsa: generalized Born (GB) model with Surface Area contributions.
-                cpcmx: Extended Conductor-like Polarizable Continuum Solvation Model (CPCM-X).
-                Defaults to None.
-
-        Returns:
-            Self: modified self.
-        """
-        assert self.num_confs > 0, (
-            "calculate_sp_torsion_energies() requires at least one conformer"
-        )
-
-        ref_conf = self.confs[0].copy()
-
-        if batchsize_atoms >= ref_conf.natoms:
-            assert not isinstance(calculator, str), (
-                "Batch singlepoint is required for batch calculation"
-            )
-
-        ref_conf = ref_conf.calculate_sp_torsion_energies(
-            calculator,
-            torsion_angle_idx,
-            simplify,
-            interval,
-            water=water,
-            batchsize_atoms=batchsize_atoms,
-        )
-
-        self.props["torsion"] = ref_conf.props["torsion"]
-
-        return self
 
     def draw(
         self,

@@ -613,56 +613,16 @@ class Conf:
                 # update atomic coordinates
                 return self.sync(ase_atoms.get_positions())
 
-    def calculate_torsion_energies_one(
-        self,
-        calculator: str | Callable,
-        indices: tuple[int, ...],
-        simplify: bool = True,
-        fmax: float = 0.05,
-        interval: float = 20.0,
-        use_converged_only: bool = True,
-        water: str | None = None,
-    ) -> Self:
-        """Calculate potential energy profile for one torsion angle.
 
-        Args:
-            calculator (str | Callable): 'MMFF', 'UFF', 'xTB' or ASE calculator.
-            indices (tuple[int, ...]): atom indices (i,j,k,l) for a torsion angle
-            simplify (bool, optional): whether to use fragementation. Defaults to True.
-            fmax (float, optional): convergence limit for optimize. Defaults to 0.05.
-            interval (float, optional): angle intervals. Defaults to 20.0.
-            use_converged_only (bool, optional): whether to use only converged data. Defaults to True.
-
-        Args for xTB calculator:
-            water (str, optional): water solvation model (choose 'gbsa' or 'alpb')
-                alpb: ALPB solvation model (Analytical Linearized Poisson-Boltzmann).
-                gbsa: generalized Born (GB) model with Surface Area contributions.
-                Defaults to None.
-
-        Returns:
-            Self: modified self.
-        """
-        return rdworks.torsion.calculate_torsion_energies_one(
-            self,
-            calculator,
-            indices,
-            simplify=simplify,
-            fmax=fmax,
-            interval=interval,
-            use_converged_only=use_converged_only,
-            water=water,
-        )
-
-    def calculate_torsion_energies(
+    def torsion_scan(
         self,
         calculator: str | Callable,
         torsion_angle_idx: int | None = None,
         simplify: bool = True,
-        fmax: float = 0.05,
         interval: float = 20.0,
-        use_converged_only: bool = True,
-        batchsize_atoms: int = 0,
+        fmax: float = 0.05,
         water: str | None = None,
+        use_converged_only: bool = True,
     ) -> Self:
         """Calculates potential energy profiles for each torsion angle using ASE or BatchOptimizer.
 
@@ -687,60 +647,18 @@ class Conf:
             Self: modified self.
         """
 
-        return rdworks.torsion.calculate_torsion_energies(
+        return rdworks.torsion.torsion_scan(
             self,
-            calculator,
+            calculator=calculator,
             torsion_angle_idx=torsion_angle_idx,
             simplify=simplify,
+            interval=interval,
             fmax=fmax,
-            interval=interval,
+            water=water,
             use_converged_only=use_converged_only,
-            batchsize_atoms=batchsize_atoms,
-            water=water,
+            
         )
 
-    def calculate_sp_torsion_energies(
-        self,
-        calculator: str | Callable,
-        torsion_angle_idx: int | None = None,
-        simplify: bool = True,
-        interval: float = 20.0,
-        water: str | None = None,
-        batchsize_atoms: int = 0,
-    ) -> Self:
-        """Calculates Single-Point potential energy profiles for each torsion angle using ASE or BatchSinglePoint.
-
-        Args:
-            calculator (str | Callable): 'MMFF', 'UFF', 'xTB', ASE calculator, or BatchOptimizer.
-            torsion_angle_idx (int | None): key to the torsion indices to calculate. Defaults to None (all).
-            simplify (bool, optional): whether to use fragment surrogate. Defaults to True.
-            fmax (float, optional): fmax of ASE optimizer. Defaults to 0.05.
-            interval (float, optional): interval of torsion angles in degree. Defaults to 15.0.
-            use_converged_only (bool, optional): whether to use only converged data. Defaults to True.
-            batchsize_atoms (int, optional): maximum number of atoms in a single batch.
-                Setting any number smaller than conf.natoms to disable batch optimization.
-                Defaults to 0.
-
-        Args for xTB calculator:
-            water (str, optional): water solvation model (choose 'gbsa' or 'alpb')
-                alpb: ALPB solvation model (Analytical Linearized Poisson-Boltzmann).
-                gbsa: generalized Born (GB) model with Surface Area contributions.
-                cpcmx: Extended Conductor-like Polarizable Continuum Solvation Model (CPCM-X).
-                Defaults to None.
-
-        Returns:
-            Self: modified self.
-        """
-
-        return rdworks.torsion.calculate_sp_torsion_energies(
-            self,
-            calculator,
-            torsion_angle_idx=torsion_angle_idx,
-            simplify=simplify,
-            interval=interval,
-            water=water,
-            batchsize_atoms=batchsize_atoms,
-        )
 
     def dumps(self, key: str = "") -> str:
         """Returns JSON dumps of the `props`.

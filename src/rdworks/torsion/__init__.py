@@ -8,6 +8,9 @@ Submodules:
                    same names delegate here)
     wavefront:     TorsionDrive torsion scans (wavefront propagation of constrained
                    optimizations, https://doi.org/10.1063/5.0009232); same output format
+    openforcefield: GAFF/GAFF2/OpenFF (Parsley, Sage, Rosemary) single points and (constrained)
+                   optimizations with OpenMM (optional dependencies: rdworks[openff]);
+                   use `from rdworks.torsion import openforcefield` (not re-exported)
     plot:          plot data from torsion scan results
 
 The public functions are re-exported here, so `from rdworks.torsion import ...`

@@ -25,6 +25,7 @@ from rdkit import Chem
 from rdkit.Chem import rdForceFieldHelpers
 from rdworks.std import clean_2d
 from rdworks.torsion.fragment import create_torsion_fragment
+from rdworks.torsion import openforcefield
 import rdworks.units
 
 if TYPE_CHECKING:
@@ -47,7 +48,10 @@ def constrained_optimize(
 
     Args:
         conf (Conf): starting conformer (not modified).
-        calculator (str | Callable): 'MMFF94' (= 'MMFF'), 'MMFF94s', 'UFF', or ASE calculator.
+        calculator (str | Callable): 'MMFF94' (= 'MMFF'), 'MMFF94s', 'UFF', or ASE calculator;
+            or 'GAFF', 'GAFF2', 'Parsley', 'Sage', 'Rosemary', which are delegated to
+            `rdworks.torsion.openforcefield.constrained_optimize()` with its own default
+            restraint force constant (kcal/mol/rad^2).
         indices (tuple[int, ...]): atom indices (i,j,k,l) of the torsion angle.
         angle (float): target torsion angle in degrees.
         fmax (float, optional): force convergence limit of the ASE optimizer. Defaults to 0.05.
@@ -65,6 +69,11 @@ def constrained_optimize(
         Conf: optimized copy with `E_tot(kcal/mol)` (unconstrained energy) and `Converged`
             in its props.
     """
+    if openforcefield.is_supported(calculator):
+        return openforcefield.constrained_optimize(
+            conf, calculator, indices, angle, fmax=fmax, max_iter=max_iter
+        )
+
     (i, j, k, l) = indices
     work = conf.copy()
     work.set_torsion_angle(i, j, k, l, angle)  # atoms bonded to `l` move.
@@ -131,7 +140,8 @@ def torsion_drive_profile(
 
     Args:
         conf (Conf): reference conformer (not modified); its geometry seeds the scan.
-        calculator (str | Callable): 'MMFF94' (= 'MMFF'), 'MMFF94s', 'UFF', or ASE calculator.
+        calculator (str | Callable): 'MMFF94' (= 'MMFF'), 'MMFF94s', 'UFF', or ASE calculator;
+            or 'GAFF', 'GAFF2', 'Parsley', 'Sage', 'Rosemary'.
         indices (tuple[int, ...]): atom indices (i,j,k,l) for a torsion angle.
         simplify (bool): whether to use fragmentation.
         interval (float): grid spacing in degrees; 360 must be a multiple of it.
@@ -247,7 +257,8 @@ def torsion_drive(
 
     Args:
         conf (Conf): reference conformer.
-        calculator (str | Callable): 'MMFF94' (= 'MMFF'), 'MMFF94s', 'UFF', or ASE calculator.
+        calculator (str | Callable): 'MMFF94' (= 'MMFF'), 'MMFF94s', 'UFF', or ASE calculator;
+            or 'GAFF', 'GAFF2', 'Parsley', 'Sage', 'Rosemary' (see `rdworks.torsion.openforcefield`).
         torsion_angle_idx (int | None): key to the torsion indices to calculate. Defaults to None (all).
         simplify (bool, optional): whether to use fragment surrogate. Defaults to True.
         interval (float, optional): grid spacing of torsion angles in degree; 360 must be

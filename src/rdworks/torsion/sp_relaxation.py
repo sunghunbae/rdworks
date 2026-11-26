@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from rdkit import Chem
 from rdworks.std import clean_2d
 from rdworks.torsion.fragment import create_torsion_fragment
+from rdworks.torsion import openforcefield
 
 if TYPE_CHECKING:
     # only for type hints; a runtime import would be circular (rdworks.conf imports rdworks.torsion)
@@ -32,7 +33,8 @@ def torsion_energy_profile(
 
     Args:
         conf (Conf): reference conformer.
-        calculator (str | Callable): 'MMFF', 'UFF', 'xTB' or ASE calculator. It will be passed to `conf.optimize()`.
+        calculator (str | Callable): 'MMFF', 'UFF', 'xTB' or ASE calculator, passed to `conf.optimize()`;
+            or 'GAFF', 'GAFF2', 'Parsley', 'Sage', 'Rosemary' (see `rdworks.torsion.openforcefield`).
         indices (tuple[int, ...]): atom indices (i,j,k,l) for a torsion angle
         simplify (bool, optional): whether to use fragmentation.
         interval (float, optional): angle intervals.
@@ -51,6 +53,10 @@ def torsion_energy_profile(
             and `E_rel(kcal/mol)` (plus `frag` and `frag_indices` if `simplify`).
             E_rel = E_init - median(E_last), shifted so that its minimum is 0.
     """
+
+    use_openff = openforcefield.is_supported(calculator)
+    if use_openff and water is not None:
+        raise ValueError(f"{calculator} calculations are in the gas phase; water={water!r} is not supported")
 
     profile_dict = {"indices": indices}
 
@@ -79,8 +85,11 @@ def torsion_energy_profile(
         scan_conf.set_torsion_angle(*work_indices, angle)  # atoms bonded to `l` move.
         data["angle"].append(angle)
         # relax the structure starting from the one with the set torsion angle
-        scan_conf = scan_conf.optimize(calculator, fmax=fmax, water=water)
-        # conf.optimize() updates coordinates and conf.props:
+        if use_openff:
+            scan_conf = openforcefield.optimize(scan_conf, calculator, fmax=fmax)
+        else:
+            scan_conf = scan_conf.optimize(calculator, fmax=fmax, water=water)
+        # conf.optimize() and openforcefield.optimize() update coordinates and conf.props:
         #   `E_tot_init(kcal/mol)`, `E_tot(kcal/mol)`, `Converged`.
         data["init"].append(scan_conf.props["E_tot_init(kcal/mol)"])
         data["last"].append(scan_conf.props["E_tot(kcal/mol)"])
@@ -120,7 +129,8 @@ def torsion_scan(
 
     Args:
         conf (Conf): reference conformer.
-        calculator (str | Callable): 'MMFF', 'UFF', 'xTB', ASE calculator. It will be passed to `conf.optimize()`.
+        calculator (str | Callable): 'MMFF', 'UFF', 'xTB', ASE calculator, passed to `conf.optimize()`;
+            or 'GAFF', 'GAFF2', 'Parsley', 'Sage', 'Rosemary' (see `rdworks.torsion.openforcefield`).
         torsion_angle_idx (int | None): key to the torsion indices to calculate. Defaults to None (all).
         simplify (bool, optional): whether to use fragment surrogate. Defaults to True.
         interval (float, optional): interval of torsion angles in degree. Defaults to 20.0.

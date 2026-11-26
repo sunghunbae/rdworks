@@ -22,6 +22,19 @@ dependencies = [
     "tqdm>=4.67.1",
 ]
 
+[project.optional-dependencies]
+# OpenFF (Parsley/Sage/Rosemary) energies and optimizations in rdworks.torsion.openforcefield.
+# GAFF/GAFF2 additionally need openmmforcefields and ambertools, which are conda-forge only
+# (see the pixi `openff` feature below).
+openff = [
+    "openmm>=8.2.0",
+    "openff-toolkit>=0.19.0",
+    "openff-interchange>=0.5.0",
+    "openff-forcefields>=2026.11.0",
+    "openff-nagl>=0.6.0",
+    "openff-nagl-models>=2025.9.0",
+]
+
 [project.urls]
 Homepage        = "https://github.com/sunghunbae/rdworks"
 Repository      = "https://github.com/sunghunbae/rdworks.git"
@@ -85,6 +98,7 @@ rdworks = { path = "." }
 default = { solve-group = "default" }
 dev = { features = ["dev", "test"], solve-group = "default" }
 test = { features = ["test"], solve-group = "default" }
+openff = { features = ["openff", "test"], solve-group = "openff" }
 
 # The `dev` feature is generated from [dependency-groups].dev (installed from PyPI)
 [tool.pixi.tasks]
@@ -120,6 +134,17 @@ tqdm = ">=4.67.1"
 [tool.pixi.feature.test.dependencies]
 pytest = "*"
 import-linter = "*"
+
+# GAFF, GAFF2, and OpenFF force fields (rdworks.torsion.openforcefield): `pixi run -e openff test`
+[tool.pixi.feature.openff.dependencies]
+openmm = ">=8.2.0"
+openff-toolkit = ">=0.19.0"
+openff-interchange = ">=0.5.0"
+openff-forcefields = ">=2026.11.0"
+openff-nagl = ">=0.6.0"
+openff-nagl-models = ">=2025.9.0"
+openmmforcefields = "*"
+ambertools = "*"
 
 [tool.pixi.feature.test.tasks]
 test = "pytest"

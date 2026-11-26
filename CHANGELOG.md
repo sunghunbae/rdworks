@@ -1,6 +1,7 @@
 # Change Log
 
 ## Unreleased
+- added TorsionDrive torsion scans (`rdworks.torsion.wavefront`, https://doi.org/10.1063/5.0009232): `torsion_drive(conf, calculator, ...)` scans each torsion on a periodic grid by wavefront propagation of torsion-constrained optimizations (MMFF94, MMFF94s, UFF, or ASE calculators) and stores profiles in `conf.props['torsion']` in the same format as `torsion_scan()`; `constrained_optimize()` and `torsion_drive_profile()` are also exported from `rdworks.torsion`
 - split `rdworks.torsion` into a package: `rdworks.torsion.atom_indices` (rotatable-bond detection), `rdworks.torsion.fragment` (torsion fragments), `rdworks.torsion.sp_relaxation` (torsion energy scans), and `rdworks.torsion.plot` (plot data); all public functions are re-exported from `rdworks.torsion`, so existing imports keep working
 - changed `import rdworks` to only attach a `logging.NullHandler` to the `rdworks` logger (no handler, level or format is set) and to no longer change RDKit's log level; configure output with `logging.basicConfig(level=logging.INFO)` and silence RDKit with `RDLogger.DisableLog("rdApp.*")`
 - replaced all bare `except:` and swallowed `except Exception` blocks with specific exception types (original errors are chained with `from e`); unrelated programming errors are no longer hidden
